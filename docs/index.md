@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Data Analysis with Databricks SQL
 
 You can use the [editor on GitHub](https://github.com/databricks-academy/data-analysis-with-databricks-sql/edit/published/docs/index.md) to maintain and preview the content for your website in Markdown files.
 
