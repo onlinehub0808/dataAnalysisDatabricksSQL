@@ -1,37 +1,7 @@
-## Welcome to GitHub Pages
+# Data Analysis with Databricks SQL
+This repository contains the resources students need to follow along with the instructor teaching this course, in addition to the various labs and their solutions.
 
-You can use the [editor on GitHub](https://github.com/databricks-academy/data-analysis-with-databricks-sql/edit/published/README.md) to maintain and preview the content for your website in Markdown files.
+There are two ways to get started (with and w/o Databricks Repos). Your instructor will indicate which procedure you should use and when.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/databricks-academy/data-analysis-with-databricks-sql/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+For your convenience, both procedures are documented for you at  
+<a href="https://www.databricks.training/step-by-step/importing-courseware-from-github" target="_blank">https&#58;//www.databricks.training/step-by-step/importing-courseware-from-github</a>.<br/>
