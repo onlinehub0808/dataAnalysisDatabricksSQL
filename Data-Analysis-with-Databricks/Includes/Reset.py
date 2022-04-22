@@ -8,43 +8,31 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # Pre-Course Setup
-# MAGIC 
-# MAGIC Run this notebook just before class to ensure all assets are ready.
-# MAGIC 
-# MAGIC The steps include:
-# MAGIC * Install the datasets to a common folder in the workspace
-# MAGIC * Create 1 endpoint per user in the workspace
-# MAGIC * Create 1 database per user in the workspace
-# MAGIC * Grant all privileges on the database for the corresponding student (manual)
-# MAGIC * Preload the table "flight_delays"
+# MAGIC Resets the environment removing any directories and or tables created during course execution
 
 # COMMAND ----------
 
-# MAGIC %run ./Includes/Classroom-Setup
+# MAGIC %run ./_utility-functions
 
 # COMMAND ----------
 
-DA.install_toolbox()
+DA = DBAcademyHelper()
+user_db = Step.to_db_name(DA.username, DA.naming_template, DA.naming_params)
+
+rows = spark.sql("SHOW DATABASES").collect()
+for row in rows:
+    db_name = row[0]
+    if db_name.startswith(user_db):
+        print(f"Dropping database {db_name}")
+        spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE")
+
+result = dbutils.fs.rm(DA.working_dir_prefix, True)
+print(f"Deleted {DA.working_dir_prefix}: {result}")
 
 # COMMAND ----------
 
-DA.print_instructions()
-
-# COMMAND ----------
-
-# TODO
-dbutils.notebook.exit("Precluding Run-All")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Pre-Load Tables
-# MAGIC Run the following cell to pre-load each database with the specified table
-
-# COMMAND ----------
-
-DA.preload_student_databases()
+DA.install_datasets(reinstall=False)
+print("Course environment succesfully reset")
 
 # COMMAND ----------
 
