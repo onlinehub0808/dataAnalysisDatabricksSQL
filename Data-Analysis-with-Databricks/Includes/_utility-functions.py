@@ -119,7 +119,6 @@ def install_datasets(self, reinstall=False):
 
     if not reinstall and existing:
         print(f"Skipping install of existing dataset.")
-        print()
         self.validate_datasets()
         return 
 
@@ -256,9 +255,9 @@ class Publisher():
         import re, os
         from dbacademy import dbgems
         
-        if dbgems.get_tag("jobId") is not None:
-            print("Skipping publish while running as a job")
-            return ""
+        # if dbgems.get_tag("jobId") is not None:
+        #     print("Skipping publish while running as a job")
+        #     return ""
         
         lesson_name = dbgems.get_notebook_name() if lesson_name is None else lesson_name
         file_name = re.sub("[^a-zA-Z0-9]", "-", lesson_name)+".html"
@@ -781,4 +780,62 @@ def preload_student_databases(self):
             spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/gym-logs' FILEFORMAT = JSON FILES = ('20191201_3.json');""")        
 
 DBAcademyHelper.monkey_patch(preload_student_databases)
+
+# COMMAND ----------
+
+def create_sql_endpoints(self):
+    from dbacademy.dbrest.sql.endpoints import CLUSTER_SIZE_2X_SMALL
+    
+    self.client.sql().endpoints().create_user_endpoints(naming_template=self.naming_template,  # Required
+                                                        naming_params=self.naming_params,      # Required
+                                                        cluster_size = CLUSTER_SIZE_2X_SMALL,  # Required
+                                                        enable_serverless_compute = False,     # Required
+                                                        tags = {                                     
+                                                            "dbacademy.course": "data-analysis-with-databricks",  # Tag the name of the course
+                                                            "dbacademy.source": "data-analysis-with-databricks"   # Tag the name of the course
+                                                        },  
+                                                        users=self.usernames)                       # Restrict to the specified list of users
+
+DBAcademyHelper.monkey_patch(create_sql_endpoints)
+
+# COMMAND ----------
+
+def create_user_specific_databases(self):
+    for username in self.usernames:
+        db_name = Step.to_db_name(username=username, naming_template=self.naming_template, naming_params=self.naming_params)
+        db_path = f"dbfs:/mnt/dbacademy-users/{username}/{self.course_code}/database.db"
+
+        print(f"Creating the database \"{db_name}\"\n   for \"{username}\" \n   at \"{db_path}\"\n")
+        spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE;")
+        spark.sql(f"CREATE DATABASE {db_name} LOCATION '{db_path}';")
+        
+DBAcademyHelper.monkey_patch(create_user_specific_databases)
+
+# COMMAND ----------
+
+def create_user_specific_grants(self):
+    from dbacademy import dbgems
+    
+    sql = ""
+    for username in self.usernames:
+        db_name = Step.to_db_name(username=username, naming_template=self.naming_template, naming_params=self.naming_params)
+        sql += f"GRANT ALL PRIVILEGES ON DATABASE `{db_name}` TO `{username}`;\n"
+        sql += f"GRANT ALL PRIVILEGES ON ANY FILE TO `{username}`;\n"
+        sql += f"ALTER DATABASE {db_name} OWNER TO `{username}`;\n"    
+        sql += "\n"
+
+    query_name = f"Instructor - Grant All Users - Data Analysis with Databricks"
+    query = self.client.sql().queries().get_by_name(query_name)
+    if query is not None:
+        self.client.sql().queries().delete_by_id(query.get("id"))
+
+    query = self.client.sql().queries().create(name=query_name, 
+                                          query=sql[0:-1], 
+                                          description="Grants the required access for all users to the databases for the course {course}",
+                                          schedule=None, options=None, data_source_id=None)
+    query_id = query.get("id")
+    displayHTML(f"""Query created - follow this link to execute the grants in Databricks SQL</br></br>
+                    <a href="/sql/queries/{query_id}/source?o={dbgems.get_workspace_id()}" target="_blank">{query_name}</a>""")
+    
+DBAcademyHelper.monkey_patch(create_user_specific_grants)
 
