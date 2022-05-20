@@ -7,8 +7,9 @@
 # COMMAND ----------
 
 _course_code = "dawd"
+_course_name = "data-analysis-with-databricks"
 _naming_params = {"course": _course_code}
-_data_source_name = "data-analysis-with-databricks/v01"
+_data_source_name = f"{_course_name}/v01"
 
 # COMMAND ----------
 
@@ -41,8 +42,9 @@ class DBAcademyHelper():
         from dbacademy.dbrest import DBAcademyRestClient
 
         # Defined at the top of this file, exterinally for easier reference
-        global _course_code, _naming_params, _data_source_name
+        global _course_code, _course_name, _naming_params, _data_source_name
         self.course_code = _course_code
+        self.course_name = _course_name
         self.naming_params = _naming_params
         self.data_source_name = _data_source_name
         
@@ -728,18 +730,18 @@ def preload_student_databases(self):
             print(f"Creating the table \"{db_name}.sales\" for \"{username}\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.sales;""")
             spark.sql(f"""CREATE TABLE {db_name}.sales AS
-      SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/sales`;""")
+      SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/sales`;""")
 
             print(f"Creating the table \"{db_name}.promo_prices\" for \"{username}\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.promo_prices;""")
             spark.sql(f"""CREATE TABLE {db_name}.promo_prices AS
-      SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/promo_prices`;""")
+      SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/promo_prices`;""")
 
             # TODO - Convert underlying source to Delta
             print(f"Creating the table \"{db_name}.sales_orders\" for \"{username}\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.sales_orders;""")
             spark.sql(f"""CREATE TABLE {db_name}.sales_orders AS
-      SELECT * FROM json.`wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/sales_orders`;""")
+      SELECT * FROM json.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/sales_orders`;""")
 
             # TODO - Convert underlying source to Delta
             print(f"Creating the table \"{db_name}.loyalty_segments\" for \"{username}\"")
@@ -776,8 +778,8 @@ def preload_student_databases(self):
             # Leave underlying data as JSON for the COPY INTO lab
             print(f"Creating the table \"{db_name}.gym_logs\" for \"{username}\"")
             spark.sql(f"""CREATE OR REPLACE TABLE {db_name}.gym_logs (first_timestamp DOUBLE, gym Long, last_timestamp DOUBLE, mac STRING);""")
-            spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/gym-logs' FILEFORMAT = JSON FILES = ('20191201_2.json');""")
-            spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/gym-logs' FILEFORMAT = JSON FILES = ('20191201_3.json');""")        
+            spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/gym-logs' FILEFORMAT = JSON FILES = ('20191201_2.json');""")
+            spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/gym-logs' FILEFORMAT = JSON FILES = ('20191201_3.json');""")        
 
 DBAcademyHelper.monkey_patch(preload_student_databases)
 
@@ -786,15 +788,15 @@ DBAcademyHelper.monkey_patch(preload_student_databases)
 def create_sql_endpoints(self):
     from dbacademy.dbrest.sql.endpoints import CLUSTER_SIZE_2X_SMALL
     
-    self.client.sql().endpoints().create_user_endpoints(naming_template=self.naming_template,  # Required
-                                                        naming_params=self.naming_params,      # Required
-                                                        cluster_size = CLUSTER_SIZE_2X_SMALL,  # Required
-                                                        enable_serverless_compute = False,     # Required
+    self.client.sql().endpoints().create_user_endpoints(naming_template=self.naming_template,      # Required
+                                                        naming_params=self.naming_params,          # Required
+                                                        cluster_size = CLUSTER_SIZE_2X_SMALL,      # Required
+                                                        enable_serverless_compute = False,         # Required
                                                         tags = {                                     
-                                                            "dbacademy.course": "data-analysis-with-databricks",  # Tag the name of the course
-                                                            "dbacademy.source": "data-analysis-with-databricks"   # Tag the name of the course
+                                                            "dbacademy.course": self.course_name.replace("-", "_"),  # Tag the name of the course
+                                                            "dbacademy.source": self.course_name.replace("-", "_"),  # Tag the name of the course
                                                         },  
-                                                        users=self.usernames)                       # Restrict to the specified list of users
+                                                        users=self.usernames)                      # Restrict to the specified list of users
 
 DBAcademyHelper.monkey_patch(create_sql_endpoints)
 
@@ -813,29 +815,88 @@ DBAcademyHelper.monkey_patch(create_user_specific_databases)
 
 # COMMAND ----------
 
-def create_user_specific_grants(self):
+def update_user_specific_grants(self):
     from dbacademy import dbgems
+    from dbacademy.dbrest import DBAcademyRestClient
     
-    sql = ""
-    for username in self.usernames:
-        db_name = Step.to_db_name(username=username, naming_template=self.naming_template, naming_params=self.naming_params)
-        sql += f"GRANT ALL PRIVILEGES ON DATABASE `{db_name}` TO `{username}`;\n"
-        sql += f"GRANT ALL PRIVILEGES ON ANY FILE TO `{username}`;\n"
-        sql += f"ALTER DATABASE {db_name} OWNER TO `{username}`;\n"    
-        sql += "\n"
+    job_name = "DA-DAWD-Configure-Permissions"
+    DA.client.jobs().delete_by_name(job_name, success_only=False)
 
-    query_name = f"Instructor - Grant All Users - Data Analysis with Databricks"
-    query = self.client.sql().queries().get_by_name(query_name)
-    if query is not None:
-        self.client.sql().queries().delete_by_id(query.get("id"))
+    if dbgems.get_notebook_dir().endswith("/Includes"):
+        # For CloudLabs Setup
+        notebook_path = f"{dbgems.get_notebook_dir()}/Configure-Permissions"
+    else:
+        # For Instructor setup
+        notebook_path = f"{dbgems.get_notebook_dir()}/Includes/Configure-Permissions"
 
-    query = self.client.sql().queries().create(name=query_name, 
-                                          query=sql[0:-1], 
-                                          description="Grants the required access for all users to the databases for the course {course}",
-                                          schedule=None, options=None, data_source_id=None)
-    query_id = query.get("id")
-    displayHTML(f"""Query created - follow this link to execute the grants in Databricks SQL</br></br>
-                    <a href="/sql/queries/{query_id}/source?o={dbgems.get_workspace_id()}" target="_blank">{query_name}</a>""")
+    params = {
+        "name": job_name,
+        "tags": {
+            "dbacademy.course": self.course_name,
+            "dbacademy.source": self.course_name
+        },
+        "email_notifications": {},
+        "timeout_seconds": 7200,
+        "max_concurrent_runs": 1,
+        "format": "MULTI_TASK",
+        "tasks": [
+            {
+                "task_key": "Configure-Permissions",
+                "description": "Configure all users's permissions for user-specific databases.",
+                "libraries": [],
+                "notebook_task": {
+                    "notebook_path": notebook_path,
+                    "base_parameters": []
+                },
+                "new_cluster": {
+                    "num_workers": "0",
+                    "spark_conf": {
+                        "spark.master": "local[*]"
+                    },
+                    "data_security_mode": "LEGACY_TABLE_ACL",
+                    "runtime_engine": "STANDARD",
+                    "spark_env_vars": {
+                        "WSFS_ENABLE_WRITE_SUPPORT": "true"
+                    },
+                },
+            },
+        ],
+    }
+    cluster_params = params.get("tasks")[0].get("new_cluster")
+    cluster_params["spark_version"] = DA.client.clusters().get_current_spark_version()
     
-DBAcademyHelper.monkey_patch(create_user_specific_grants)
+    if DA.client.clusters().get_current_instance_pool_id() is not None:
+        cluster_params["instance_pool_id"] = DA.client.clusters().get_current_instance_pool_id()
+    else:
+        cluster_params["node_type_id"] = DA.client.clusters().get_current_node_type_id()
+    
+    create_response = DA.client.jobs().create(params)
+    job_id = create_response.get("job_id")
+
+    run_response = DA.client.jobs().run_now(job_id)
+    run_id = run_response.get("run_id")
+
+    final_response = DA.client.runs().wait_for(run_id)
+    
+    final_state = final_response.get("state").get("result_state")
+    assert final_state == "SUCCESS", f"Expected the final state to be SUCCESS, found {final_state}"
+    
+    DA.client.jobs().delete_by_name(job_name, success_only=False)
+    print()
+    print("Update completed successfully.")
+
+DBAcademyHelper.monkey_patch(update_user_specific_grants)
+
+# COMMAND ----------
+
+def update_entitlements(self):
+    import json
+    
+    for username in DA.usernames:
+        print(f"Adding the entitlement \"databricks-sql-access\" for user \"{username}\"")
+
+        user = DA.client.scim().users().get_by_name(username)
+        DA.client.scim().users().add_entitlement(user.get("id"), "databricks-sql-access")
+        
+DBAcademyHelper.monkey_patch(update_entitlements)
 

@@ -17,8 +17,7 @@
 # MAGIC 2. Install the Datasets to the Workspace
 # MAGIC 3. Create SQL Endpoints
 # MAGIC 4. Create User-Specific Databases
-# MAGIC 5. Create DB SQL Query for User Grants
-# MAGIC 6. Update User Grants
+# MAGIC 6. Update User-Specific Grants
 # MAGIC 7. Pre-Load Tables
 
 # COMMAND ----------
@@ -28,7 +27,7 @@
 # COMMAND ----------
 
 # MAGIC %md ## DBAcademy Toolbox
-# MAGIC Available from GitHub (see [databricks-academy/dbacademy-toolbox](dbacademy-toolbox)), the toolbox can be used to help manage the learning environment with tooling to support things like downloading the datasets, creating, deleting, starting endpoints, creating databsaes, and much more.
+# MAGIC Available from GitHub (see <a href="https://github.com/databricks-academy/dbacademy-toolbox" target="_blank">databricks-academy/dbacademy-toolbox</a>), the toolbox can be used to help manage the learning environment with tooling to support things like downloading the datasets, creating, deleting, starting endpoints, creating databsaes, and much more.
 # MAGIC 
 # MAGIC While optional, the following cell will install the toolbox and make it available to you in this workspace.
 
@@ -46,13 +45,14 @@
 
 # MAGIC %md
 # MAGIC ### Step 1: Configure User Permissions
-# MAGIC * Open the **Admin Console** from the **Data Science & Engineering** view
-# MAGIC * Select the **Groups** tab
-# MAGIC * Select the **users** group
-# MAGIC * Select the **Entitlements** tab
-# MAGIC * Select only the **Databricks SQL access** entitlement
 # MAGIC 
-# MAGIC <img src="https://files.training.databricks.com/images/icon_note_24.png"/> If you do not see the Admin Console, it is most likely due to the fact that you lack admin priviledges in the workspace which is required to complete the setup.
+# MAGIC This task simply adds the "**databricks-sql-access**" entitlement to each user ensuring that they can access the Databricks SQL view.
+# MAGIC 
+# MAGIC To complete this step, simply run the following command:
+
+# COMMAND ----------
+
+update_entitlements(DA)
 
 # COMMAND ----------
 
@@ -106,19 +106,7 @@ create_user_specific_databases(DA)
 
 # COMMAND ----------
 
-# MAGIC %md ### Step 5: Create DB SQL Query for User Grants
-# MAGIC 
-# MAGIC This task will create a Databricks SQL Query containing all the required grant statements which must be executed [manually] to effect the changes expressed in the query.
-# MAGIC 
-# MAGIC To complete this step simply run the following command.
-
-# COMMAND ----------
-
-DA.create_user_specific_grants()
-
-# COMMAND ----------
-
-# MAGIC %md ### Step 6: Update User Grants
+# MAGIC %md ### Step 5: Update User-Specific Grants
 # MAGIC 
 # MAGIC With the query created, we now need to open the query in Databricks SQL and execute it.
 # MAGIC 
@@ -129,7 +117,11 @@ DA.create_user_specific_grants()
 
 # COMMAND ----------
 
-# MAGIC %md ### Step 7: Pre-Load Tables
+DA.update_user_specific_grants()
+
+# COMMAND ----------
+
+# MAGIC %md ### Step 6: Pre-Load Tables
 # MAGIC 
 # MAGIC This tasks will create tables in each user-specific database and load the prescribed data from **/mnt/dbacademy-datasets/data-analysis-with-databricks**.
 # MAGIC 
