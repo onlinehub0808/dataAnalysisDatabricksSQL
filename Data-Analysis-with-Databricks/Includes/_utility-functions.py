@@ -212,14 +212,15 @@ class Publisher():
         self.naming_template = naming_template
         self.naming_params = naming_params
     
-    def add_validation(self, instructions, statements, label, expected, length):
+    def add_validation(self, include_use, instructions, test_code, statements, label, expected, length):
         # Convert single statement to the required list
         if statements is None: statements = []
         if type(statements) == str: statements = [statements]
         
-        step = Validation(len(self.steps)+1, instructions, label, expected, length, self.naming_template, self.naming_params)
+        step = Validation(len(self.steps)+1, instructions, test_code, label, expected, length, self.naming_template, self.naming_params)
         
-        step.add("USE {db_name};")
+        if include_use:
+            step.add("USE {db_name};")
         
         for statement in statements:
             step.add(statement)
@@ -356,7 +357,7 @@ class Publisher():
             function answerIs(self, expected) {{
                 if (self.value === "") {{
                     self.style.backgroundColor="#ffffff";
-                }} else if (expected.includes(self.value.toLowerCase())) {{
+                }} else if (self.value.toLowerCase().includes(expected)) {{
                     self.style.backgroundColor="#7ffe78";
                 }} else {{
                     self.style.backgroundColor="#ffb9bb";
@@ -495,6 +496,7 @@ class Step():
         if self.instructions is not None:
             instructions = self.instructions
             if "{step}" in instructions: instructions = instructions.format(step=self.number)
+            
             html += f"""<div id="{self.id}-instruction" style="margin-bottom:1em">{instructions}</div>"""
         
         html += f"""
@@ -543,10 +545,11 @@ class Step():
 # COMMAND ----------
 
 class Validation():
-    def __init__(self, number:int, instructions:str, label:str, expected:str, length:int, naming_template:str, naming_params:dict):
+    def __init__(self, number:int, instructions:str, test_code:str, label:str, expected:str, length:int, naming_template:str, naming_params:dict):
         
         assert type(number) == int, f"Expected the parameter \"number\" to be of type int, found {type(number)}"
         assert instructions is None or type(instructions) == str, f"Expected the parameter \"instructions\" to be of type str, found {type(instructions)}"
+        assert test_code is None or type(test_code) == str, f"Expected the parameter \"test_code\" to be of type str, found {type(test_code)}"
         assert label is None or type(label) == str, f"Expected the parameter \"label\" to be of type str, found {type(label)}"
         assert expected is None or type(expected) == str, f"Expected the parameter \"expected\" to be of type str, found {type(expected)}"
         assert type(length) == int, f"Expected the parameter \"length\" to be of type str, found {type(length)}"
@@ -560,6 +563,7 @@ class Validation():
         self.number = number
         self.id = f"step-{number}"
         self.instructions = instructions
+        self.test_code = test_code
         self.label = label
         self.expected = expected
         self.length = length
@@ -593,8 +597,23 @@ class Validation():
             if "{step}" in instructions: instructions = instructions.format(step=self.number)
             html += f"""<div id="{self.id}-instruction" style="margin-bottom:1em">{instructions}</div>"""
         
+        
         html += f"""
-        <div width="100%">
+        <div style="width:{self.widthpx};{" display: none;" if sql == "" else ""}">
+            <textarea id="{self.id}-ta" style="width:{self.width-20}px; padding:10px" rows="{row_count}">{self.test_code}</textarea>
+            <textarea id="{self.id}-backup" style="display:none;">{self.test_code}</textarea>
+        </div>
+        <div style="width:{self.widthpx}; text-align:right;{" display: none;" if sql == "" else ""}">
+            <button id="{self.id}-btn" type="button"  onclick="
+                let ta = document.getElementById('{self.id}-ta');
+                ta.select();
+                ta.setSelectionRange(0, ta.value.length);
+                navigator.clipboard.writeText(ta.value);">Copy</button>
+        </div>
+        """
+        
+        html += f"""
+        <div style="margin-top:20px;" width="100%">
             <table width="100%">
             <tbody class="main_table">
             <tr>
