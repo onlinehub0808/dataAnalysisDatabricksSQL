@@ -26,6 +26,9 @@ for row in rows:
         print(f"Dropping database {db_name}")
         spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE")
 
+datasets = f"dbfs:/mnt/dbacademy-datasets/{DA.data_source_name}"
+dbutils.fs.rm(datasets, True)
+
 result = dbutils.fs.rm(DA.working_dir_prefix, True)
 print(f"Deleted {DA.working_dir_prefix}: {result}")
 

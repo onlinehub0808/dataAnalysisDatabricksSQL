@@ -870,9 +870,12 @@ def update_user_specific_grants(self):
                 "new_cluster": {
                     "num_workers": "0",
                     "spark_conf": {
-                        "spark.master": "local[*]"
+                        "spark.master": "local[*]",
+                        "spark.databricks.acl.dfAclsEnabled": "true",
+                        "spark.databricks.repl.allowedLanguages": "sql,python",
+                        "spark.databricks.cluster.profile": "serverless"             
                     },
-                    "data_security_mode": "LEGACY_TABLE_ACL",
+                    #"data_security_mode": "LEGACY_TABLE_ACL",
                     "runtime_engine": "STANDARD",
                     "spark_env_vars": {
                         "WSFS_ENABLE_WRITE_SUPPORT": "true"
@@ -888,7 +891,7 @@ def update_user_specific_grants(self):
         cluster_params["instance_pool_id"] = DA.client.clusters().get_current_instance_pool_id()
     else:
         cluster_params["node_type_id"] = DA.client.clusters().get_current_node_type_id()
-    
+               
     create_response = DA.client.jobs().create(params)
     job_id = create_response.get("job_id")
 
@@ -900,7 +903,8 @@ def update_user_specific_grants(self):
     final_state = final_response.get("state").get("result_state")
     assert final_state == "SUCCESS", f"Expected the final state to be SUCCESS, found {final_state}"
     
-    DA.client.jobs().delete_by_name(job_name, success_only=False)
+    #DA.client.jobs().delete_by_name(job_name, success_only=False)
+    
     print()
     print("Update completed successfully.")
 
