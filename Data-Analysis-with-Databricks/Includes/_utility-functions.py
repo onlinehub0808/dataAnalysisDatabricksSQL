@@ -258,9 +258,9 @@ class Publisher():
         import re, os
         from dbacademy import dbgems
         
-        # if dbgems.get_tag("jobId") is not None:
-        #     print("Skipping publish while running as a job")
-        #     return ""
+        if dbgems.get_cloud() != "AWS":
+            print(f"Skipping publish while running {dbgems.get_cloud()}")
+            return ""
         
         lesson_name = dbgems.get_notebook_name() if lesson_name is None else lesson_name
         file_name = re.sub("[^a-zA-Z0-9]", "-", lesson_name)+".html"

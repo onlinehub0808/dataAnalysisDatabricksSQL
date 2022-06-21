@@ -11,7 +11,7 @@
 # MAGIC 
 # MAGIC * Name: **Data Analysis with Databricks**
 # MAGIC * Version:  **1.1.3**
-# MAGIC * Built On: **Jun 19, 2022 at 21:39:15 UTC**
+# MAGIC * Built On: **Jun 21, 2022 at 16:14:17 UTC**
 
 # COMMAND ----------
 
