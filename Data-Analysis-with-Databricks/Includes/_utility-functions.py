@@ -371,10 +371,15 @@ class Publisher():
                         let key_value = parts[i].trim();
                         let key = key_value.split("=")[0].trim();
                         let value = key_value.split("=")[1].trim();
-
-                        if (key == "{DA.course_code}_db_name") document.getElementById("db_name").value = value;
-                        else if (key == "{DA.course_code}_username") document.getElementById("username").value = value;
-                        else console.log("Unknown cookie: "+key);
+                        if (value != "n/a") {{
+                            if (key == "{DA.course_code}_db_name") {{
+                                document.getElementById("db_name").value = value;
+                            }} else if (key == "{DA.course_code}_username") {{
+                                document.getElementById("username").value = value;
+                            }} else {{
+                                console.log("Unknown cookie: "+key);
+                            }}
+                        }}
                     }}
                 }}
                 update();
