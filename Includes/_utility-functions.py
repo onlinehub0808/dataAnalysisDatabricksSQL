@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %pip install \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-gems \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-rest \
+# MAGIC git+https://github.com/databricks-academy/dbacademy-gems@abcf150c368aba530e51670faf548604f78d0c49 \
+# MAGIC git+https://github.com/databricks-academy/dbacademy-rest@793bffab12d92eacf97309d18b46b68595e96d7a \
 # MAGIC --quiet --disable-pip-version-check
 
 # COMMAND ----------
@@ -62,7 +62,7 @@ class DBAcademyHelper():
         self.username = spark.sql("SELECT current_user()").first()[0]
         self.clean_username = re.sub("[^a-zA-Z0-9]", "_", self.username)
 
-        self.working_dir_prefix = f"dbfs:/mnt/dbacademy-users/{self.username}/{self.course_code}"
+        self.working_dir_prefix = f"dbfs:/mnt/dbacademy-users/{self.username}/{self.course_name}"
         
         working_dir = self.working_dir_prefix
         self.paths = Paths(working_dir)
@@ -744,31 +744,33 @@ def preload_student_databases(self):
         if db_name not in databases:
             print(f"Skipping creation of tables for \"{username}\"")
         else:
-            print(f"Creating the table \"{db_name}.flight_delays\" for \"{username}\"")
+            print(f"Creating tables for \"{username}\"")
+        
+            print(f"...creating the table \"{db_name}.flight_delays\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.temp_delays;""")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.flight_delays;""")
             spark.sql(f"""CREATE TABLE {db_name}.temp_delays USING CSV OPTIONS (path "dbfs:/mnt/dbacademy-datasets/{self.data_source_name}/flights/departuredelays.csv", header "true", inferSchema "true");""")
             spark.sql(f"""CREATE TABLE {db_name}.flight_delays AS SELECT * FROM {db_name}.temp_delays;""")
             spark.sql(f"""DROP TABLE {db_name}.temp_delays;""")
 
-            print(f"Creating the table \"{db_name}.sales\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.sales\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.sales;""")
             spark.sql(f"""CREATE TABLE {db_name}.sales AS
       SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/sales`;""")
 
-            print(f"Creating the table \"{db_name}.promo_prices\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.promo_prices\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.promo_prices;""")
             spark.sql(f"""CREATE TABLE {db_name}.promo_prices AS
       SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/promo_prices`;""")
 
             # TODO - Convert underlying source to Delta
-            print(f"Creating the table \"{db_name}.sales_orders\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.sales_orders\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.sales_orders;""")
             spark.sql(f"""CREATE TABLE {db_name}.sales_orders AS
       SELECT * FROM json.`wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/sales_orders`;""")
 
             # TODO - Convert underlying source to Delta
-            print(f"Creating the table \"{db_name}.loyalty_segments\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.loyalty_segments\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.temp_loyalty_segments;""")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.loyalty_segments;""")
             spark.sql(f"""CREATE TABLE {db_name}.temp_loyalty_segments USING CSV OPTIONS (path "dbfs:/mnt/dbacademy-datasets/{self.data_source_name}/loyalty_segments/loyalty_segment.csv", header "true", inferSchema "true");""")
@@ -776,7 +778,7 @@ def preload_student_databases(self):
             spark.sql(f"""DROP TABLE {db_name}.temp_loyalty_segments;""")
 
             # TODO - Convert underlying source to Delta
-            print(f"Creating the table \"{db_name}.customers\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.customers\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.temp_customers;""")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.customers;""")
             spark.sql(f"""CREATE TABLE {db_name}.temp_customers USING CSV OPTIONS (path "dbfs:/mnt/dbacademy-datasets/{self.data_source_name}/customers/customers.csv", header "true", inferSchema "true");""")
@@ -784,7 +786,7 @@ def preload_student_databases(self):
             spark.sql(f"""DROP TABLE {db_name}.temp_customers;""")
 
             # TODO - Convert underlying source to Delta
-            print(f"Creating the table \"{db_name}.suppliers\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.suppliers\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.temp_suppliers;""")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.suppliers;""")
             spark.sql(f"""CREATE TABLE {db_name}.temp_suppliers USING CSV OPTIONS (path "dbfs:/mnt/dbacademy-datasets/{self.data_source_name}/suppliers/suppliers.csv", header "true", inferSchema "true");""")
@@ -792,7 +794,7 @@ def preload_student_databases(self):
             spark.sql(f"""DROP TABLE {db_name}.temp_suppliers;""")
 
             # TODO - Convert underlying source to Delta
-            print(f"Creating the table \"{db_name}.source_suppliers\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.source_suppliers\"")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.temp_suppliers;""")
             spark.sql(f"""DROP TABLE IF EXISTS {db_name}.source_suppliers;""")
             spark.sql(f"""CREATE TABLE {db_name}.temp_suppliers USING CSV OPTIONS (path "dbfs:/mnt/dbacademy-datasets/{self.data_source_name}/suppliers/suppliers.csv", header "true", inferSchema "true");""")
@@ -800,16 +802,20 @@ def preload_student_databases(self):
             spark.sql(f"""DROP TABLE {db_name}.temp_suppliers;""")
 
             # Leave underlying data as JSON for the COPY INTO lab
-            print(f"Creating the table \"{db_name}.gym_logs\" for \"{username}\"")
+            print(f"...creating the table \"{db_name}.gym_logs\"")
             spark.sql(f"""CREATE OR REPLACE TABLE {db_name}.gym_logs (first_timestamp DOUBLE, gym Long, last_timestamp DOUBLE, mac STRING);""")
             spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/gym-logs' FILEFORMAT = JSON FILES = ('20191201_2.json');""")
             spark.sql(f"""COPY INTO {db_name}.gym_logs FROM 'wasbs://courseware@dbacademy.blob.core.windows.net/{self.data_source_name}/gym-logs' FILEFORMAT = JSON FILES = ('20191201_3.json');""")        
+            
+            print()
 
 DBAcademyHelper.monkey_patch(preload_student_databases)
 
 # COMMAND ----------
 
-def create_sql_endpoints(self):
+def create_sql_warehouses(self):
+    """Creates one warehouse per user"""
+    
     from dbacademy.dbrest.sql.endpoints import CLUSTER_SIZE_2X_SMALL
     
     self.client.sql().endpoints().create_user_endpoints(naming_template=self.naming_template,      # Required
@@ -822,20 +828,48 @@ def create_sql_endpoints(self):
                                                         },  
                                                         users=self.usernames)                      # Restrict to the specified list of users
 
-DBAcademyHelper.monkey_patch(create_sql_endpoints)
+DBAcademyHelper.monkey_patch(create_sql_warehouses)
 
 # COMMAND ----------
 
-def create_user_specific_databases(self):
-    for username in self.usernames:
-        db_name = Step.to_db_name(username=username, naming_template=self.naming_template, naming_params=self.naming_params)
-        db_path = f"dbfs:/mnt/dbacademy-users/{username}/{self.course_code}/database.db"
+def create_shared_sql_warehouse(self):
+    from dbacademy.dbrest.sql.endpoints import RELIABILITY_OPTIMIZED, CHANNEL_NAME_CURRENT, CLUSTER_SIZE_2X_SMALL
 
-        print(f"Creating the database \"{db_name}\"\n   for \"{username}\" \n   at \"{db_path}\"\n")
-        spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE;")
-        spark.sql(f"CREATE DATABASE {db_name} LOCATION '{db_path}';")
+    name = "Starter Warehouse"
+    
+    warehouse = self.client.sql.endpoints.create_or_update(
+        name = name,
+        cluster_size = CLUSTER_SIZE_2X_SMALL,
+        enable_serverless_compute = False, # Due to a bug with Free-Trial workspaces
+        min_num_clusters = self.autoscale_min,
+        max_num_clusters = self.autoscale_max,
+        auto_stop_mins = 120,
+        enable_photon = True,
+        spot_instance_policy = RELIABILITY_OPTIMIZED,
+        channel = CHANNEL_NAME_CURRENT,
+        tags = {
+            "dbacademy.event_name": str(self.event_name),
+            "dbacademy.students_count": str(self.students_count),
+            "dbacademy.workspace": self.workspace,
+            "dbacademy.org_id": self.org_id
+        })
+
+    warehouse_id = warehouse.get("id")
+
+    # # With the warehouse created, make sure that all users can attach to it.
+    self.client.permissions.warehouses.update_group(warehouse_id, "users", "CAN_USE")
+
+    print(f"Created \"{name}\"")
+    
+DBAcademyHelper.monkey_patch(create_shared_sql_warehouse)
+
+# COMMAND ----------
+
+def update_entitlements(self):
+    group = self.client.scim.groups.get_by_name("users")
+    self.client.scim.groups.add_entitlement(group.get("id"), "databricks-sql-access")
         
-DBAcademyHelper.monkey_patch(create_user_specific_databases)
+DBAcademyHelper.monkey_patch(update_entitlements)
 
 # COMMAND ----------
 
@@ -844,6 +878,8 @@ def update_user_specific_grants(self):
     from dbacademy.dbrest import DBAcademyRestClient
     
     job_name = "DA-DAWD-Configure-Permissions"
+    print(f"Starting job \"{job_name}\" to grant users access to their database")
+    
     DA.client.jobs().delete_by_name(job_name, success_only=False)
 
     if dbgems.get_notebook_dir().endswith("/Includes"):
@@ -880,7 +916,6 @@ def update_user_specific_grants(self):
                         "spark.databricks.repl.allowedLanguages": "sql,python",
                         "spark.databricks.cluster.profile": "serverless"             
                     },
-                    #"data_security_mode": "LEGACY_TABLE_ACL",
                     "runtime_engine": "STANDARD",
                     "spark_env_vars": {
                         "WSFS_ENABLE_WRITE_SUPPORT": "true"
@@ -908,7 +943,7 @@ def update_user_specific_grants(self):
     final_state = final_response.get("state").get("result_state")
     assert final_state == "SUCCESS", f"Expected the final state to be SUCCESS, found {final_state}"
     
-    #DA.client.jobs().delete_by_name(job_name, success_only=False)
+    DA.client.jobs().delete_by_name(job_name, success_only=False)
     
     print()
     print("Update completed successfully.")
@@ -917,14 +952,80 @@ DBAcademyHelper.monkey_patch(update_user_specific_grants)
 
 # COMMAND ----------
 
-def update_entitlements(self):
-    import json
-    
-    for username in DA.usernames:
-        print(f"Adding the entitlement \"databricks-sql-access\" for user \"{username}\"")
+def create_user_specific_databases(self):
+    for username in self.usernames:
+        db_name = Step.to_db_name(username=username, naming_template=self.naming_template, naming_params=self.naming_params)
+        db_path = f"dbfs:/mnt/dbacademy-users/{username}/{self.course_code}/database.db"
 
-        user = DA.client.scim().users().get_by_name(username)
-        DA.client.scim().users().add_entitlement(user.get("id"), "databricks-sql-access")
+        print(f"Creating the database \"{db_name}\"\n   for \"{username}\" \n   at \"{db_path}\"\n")
+        spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE;")
+        spark.sql(f"CREATE DATABASE {db_name} LOCATION '{db_path}';")
         
-DBAcademyHelper.monkey_patch(update_entitlements)
+DBAcademyHelper.monkey_patch(create_user_specific_databases)
+
+# COMMAND ----------
+
+configure_for_options = ["", "All Users", "Missing Users Only", "Current User Only"]
+
+def initialize_workspace_setup(self):
+    import re
+    from dbacademy import dbgems
+
+    # Special logic for when we are running under test.
+    is_smoke_test = spark.conf.get("dbacademy.smoke-test", "false") == "true"
+
+    if is_smoke_test:     self.configure_for = "Current User Only"
+    elif dbgems.is_job(): self.configure_for = "Missing Users"
+    else:                 self.configure_for = dbutils.widgets.get("configure_for")
+    
+    assert self.configure_for in ["All Users", "Missing Users Only", "Current User Only"], f"Who the workspace is being configured for must be specified: {self.configure_for}"
+
+    if self.configure_for == "Current User Only":
+        # Override for the current user only
+        self.usernames = [self.username]
+
+    elif self.configure_for == "Missing Users Only":
+        # The presumption here is that if the user doesn't have their own
+        # database, then they are also missing the rest of their config.
+        databases = [d[0] for d in spark.sql("show databases").collect()]
+        
+        missing_users = []
+        for user in self.usernames:
+            db_name = Step.to_db_name(user, self.naming_template, self.naming_params)
+            if db_name not in databases:
+                missing_users.append(user)
+
+        self.usernames = missing_users
+
+    self.students_count = dbutils.widgets.get("students_count").strip()
+    user_count = len(DA.client.scim.users.list())
+
+    if self.students_count.isnumeric():
+        self.students_count = int(self.students_count)
+        self.students_count = max(self.students_count, user_count)
+    else:
+        self.students_count = user_count
+
+    self.workspace = dbgems.get_browser_host_name()
+    if not self.workspace: self.workspace = dbgems.get_notebooks_api_endpoint()
+    self.org_id = dbgems.get_tag("orgId", "unknown")
+
+    import math
+    self.autoscale_min = 1 if is_smoke_test else math.ceil(self.students_count/20)
+    self.autoscale_max = 1 if is_smoke_test else math.ceil(self.students_count/5)
+
+    self.event_name = "Smoke Test" if is_smoke_test else dbutils.widgets.get("event_name")
+    assert self.event_name is not None and len(self.event_name) >= 3, f"The event_name must be specified with min-length of 3"
+    self.event_name = re.sub("[^a-zA-Z0-9]", "_", self.event_name)        
+    while "__" in self.event_name: self.event_name = self.event_name.replace("__", "_")
+        
+    print(f"Configured for:    {self.configure_for}")
+    print(f"Student Count:     {self.students_count}")
+    print(f"Provisioning:      {len(self.usernames)}")
+    print(f"Autoscale minimum: {self.autoscale_min}")
+    print(f"Autoscale maximum: {self.autoscale_max}")
+    if is_smoke_test:
+        print(f"Smoke Test:        {is_smoke_test} ")
+
+DBAcademyHelper.monkey_patch(initialize_workspace_setup)
 

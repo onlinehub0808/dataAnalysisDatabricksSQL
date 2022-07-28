@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>DAWD 02-5-1 - Demo - Delta Commands in Databricks SQL</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>DAWD 03-4 - Demo - Notifying Stakeholders</title>
             <link href='https://fonts.googleapis.com/css?family=DM Sans' rel='stylesheet'>
             <style>
                 h2 {
@@ -33,7 +33,7 @@
                         alt="Databricks Learning" 
                         style="width: 600px; margin-left: 100px; margin-right: 100px">
 <hr/>
-<h1>DAWD 02-5-1 - Demo - Delta Commands in Databricks SQL</h1>
+<h1>DAWD 03-4 - Demo - Notifying Stakeholders</h1>
         <p>The two fields below are used to customize queries used in this course. Enter your schema (database) name and username, and press "Enter" to populate necessary information in the queries on this page.</p>
         <table>
             <tr>
@@ -47,11 +47,13 @@
 <div id="step-1-wrapper" style="width:800px"><div id="step-1-instruction" style="margin-bottom:1em">    
 
     <h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
-    Lesson Objective</h2>
+    Lesson Objectives</h2>
     <div class="instructions-div">
     <p>At the end of this lesson, you will be able to:</p>
     <ul>
-    <li>Describe how to write commands for working with Delta tables in Databricks SQL</li>
+    <li>Describe how to configure alerts</li>
+    <li>Describe how to share queries and dashboards with stakeholders</li>
+    <li>Describe how to refresh dashboards</li>
     </ul></div>
     
     </div>
@@ -67,24 +69,38 @@
                 navigator.clipboard.writeText(ta.value);">Copy</button>
         </div>
         </div><hr/>
-<div id="step-2-wrapper" style="width:800px"><div id="step-2-instruction" style="margin-bottom:1em">    
-
-   <h3>SELECT on Delta Tables</h3>
+<div id="step-2-wrapper" style="width:800px"><div id="step-2-instruction" style="margin-bottom:1em"><h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
+Query Refresh Schedule</h2>
     <div class="instructions-div">
-    <p>So far, the SQL commands we have used are generic to most flavors of SQL. In the next few queries, we are going to look at commands that are specific to using <span class="monofont">SELECT</span> on Delta tables.</p>
-    <p>Delta tables keep a log of changes that we can view by running the command below.</p>
-    <ol start="1">
-        <li>Run the code below.</li>
+    <p>You can use scheduled query executions to keep your dashboards updated or to enable routine alerts. Let's make a query and put it on a refresh schedule.</p>
+    <ol>
+        <li>Run the query below.</li>
+        <li>Name the query by clicking "New Query" and typing “Gym Logs”</li>
+        <li>Click "Save"</li>
     </ol>
-    <p>After running <span class="monofont">DESCRIBE HISTORY</span>, we can see that we are on version number 0 and we can see a timestamp of when this change was made.</p>
-    </div>
-    
-    </div>
+    <p>The query needs to be saved with a descriptive name, so we can reference it later in this lesson. To refresh this query automatically:</p>
+    <ol start="4">
+        <li>Click "Never" next to "Refresh Schedule" (bottom-right corner of query window)</li>
+        <li>Change the dropdown to something other than "Never"</li>
+        <li>Change "End" to tomorrow's date</li>
+    </ol>
+    <p><span style="color:red">WARNING: If the refresh rate is less than the SQL Warehouse 'Auto Stop' parameter, the Warehouse will run indefinitely.</span></p>
+    </div></div>
         <div style="width:800px;">
-            <textarea id="step-2-ta" style="width:780px; padding:10px" rows="2">USE {db_name};
-DESCRIBE HISTORY customers;</textarea>
+            <textarea id="step-2-ta" style="width:780px; padding:10px" rows="7">USE {db_name};
+SELECT gym, count(*) number_of_visits 
+    
+
+FROM gym_logs
+GROUP BY gym
+ORDER BY gym;</textarea>
             <textarea id="step-2-backup" style="display:none;">USE {db_name};
-DESCRIBE HISTORY customers;</textarea>
+SELECT gym, count(*) number_of_visits 
+    
+
+FROM gym_logs
+GROUP BY gym
+ORDER BY gym;</textarea>
         </div>
         <div style="width:800px; text-align:right;">
             <button id="step-2-btn" type="button"  onclick="
@@ -94,25 +110,40 @@ DESCRIBE HISTORY customers;</textarea>
                 navigator.clipboard.writeText(ta.value);">Copy</button>
         </div>
         </div><hr/>
-<div id="step-3-wrapper" style="width:800px"><div id="step-3-instruction" style="margin-bottom:1em">    
-
-   <h3>SELECT on Delta Tables -- Updating the Table</h3>
+<div id="step-3-wrapper" style="width:800px"><div id="step-3-instruction" style="margin-bottom:1em"><h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
+Alerts</h2>
     <div class="instructions-div">
-    <p>We are going to make a change to the table.</p>
-    <ol start="2">
+    <p>Alerts allow you to configure notifications when a field returned by a scheduled query meets a specific threshold. Although we just configured a refresh schedule for our query, the Alert runs on its own schedule.</p>
+    <p>To create an Alert:</p>
+    <ol start="7">
+        <li>Click "Alerts" in the sidebar menu</li>
+        <li>Click "Create Alert"</li>
+        <li>From the Query dropdown, select our query: "Gym Logs"</li>
+        <li>Use the dropdown to change the "Value" column to <span class="monofont">number_of_visits</span> and change "Threshold" to 1</li>
+        <li>Change "Refresh" to Every 1 minute</li>
+    </ol>   
+    <p>The default destination is the user’s email address. The alert is triggered when the count of the top row in the query’s results is greater than 1.</p>
+    <p>Let's add some data to trigger the alert.</p>
+    <ol start="12">
         <li>Run the code below.</li>
     </ol>
-    <p>The code uses an <span class="monofont">UPDATE</span> statement to make a change to the table. We will be discussing <span class="monofont">UPDATE</span> later on. For now, we just need to understand that a change was made to the table. We also reran our <span class="monofont">DESCRIBE HISTORY</span> command, and note that we have a new version in the log, with a new timestamp.</p>
+    <p>This code will ingest the remaining gym log data from the object store. This will increase the number of gym visits past our threshold and trigger the alert.</p>
+    <p>Something to note with regard to configuring Alerts and Refresh Schedules: Every time they run, the SQL Warehouse will start (if it's stopped), run the query, and go into an idle state. Once the Auto Stop time has expired, the SQL Warehouse will stop. If the refresh schedule is set to a lower time limit than the SQL Warehouse's Auto Stop time, the Warehouse will never stop. This may increase costs.</p>
+    <ol start="13">
+        <li>Delete the alert and change the refresh schedule back to "Never".</li>
+    </ol>
     </div>
     
     </div>
         <div style="width:800px;">
-            <textarea id="step-3-ta" style="width:780px; padding:10px" rows="3">USE {db_name};
-UPDATE customers SET loyalty_segment = 10 WHERE loyalty_segment = 0;
-DESCRIBE HISTORY customers;</textarea>
+            <textarea id="step-3-ta" style="width:780px; padding:10px" rows="4">USE {db_name};
+COPY INTO gym_logs 
+    FROM 'wasb://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/gym-logs'
+    FILEFORMAT = JSON;</textarea>
             <textarea id="step-3-backup" style="display:none;">USE {db_name};
-UPDATE customers SET loyalty_segment = 10 WHERE loyalty_segment = 0;
-DESCRIBE HISTORY customers;</textarea>
+COPY INTO gym_logs 
+    FROM 'wasb://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v01/gym-logs'
+    FILEFORMAT = JSON;</textarea>
         </div>
         <div style="width:800px; text-align:right;">
             <button id="step-3-btn" type="button"  onclick="
@@ -122,27 +153,28 @@ DESCRIBE HISTORY customers;</textarea>
                 navigator.clipboard.writeText(ta.value);">Copy</button>
         </div>
         </div><hr/>
-<div id="step-4-wrapper" style="width:800px"><div id="step-4-instruction" style="margin-bottom:1em">    
-
-   <h3>SELECT on Delta Tables -- Updating the Table back to where it was</h3>
+<div id="step-4-wrapper" style="width:800px"><div id="step-4-instruction" style="margin-bottom:1em"><h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
+Sharing Queries</h2>
     <div class="instructions-div">
-    <p>We are going to make a change to the table.</p>
-    <ol start="3">
-        <li>Run the code below.</li>
-    </ol>
-    <p>The code uses an <span class="monofont">UPDATE</span> statement to update the loyalty_segment back to its original value. We also reran our <span class="monofont">DESCRIBE HISTORY</span> command, and note that we have a new version in the log, with a new timestamp.</p>
+    <p>We can share queries with other members of the team:</p>
+    <ol start="13">
+        <li>Back in the Query Editor, click "Share"</li>
+    </ol>   
+    <p>The "Manage Permissions" dialogue appears. If you do not have permission to change settings, all options will be greyed out. Note that, as the owner of the query, you have "Can manage" permissions. You can share the query with users and groups who are configured in your workspace. These users and groups can have either "Can run" or "Can edit" permissions. Those with "Can edit" permissions can also run the query. In order to allow "Can edit" permissions, the Credentials drop down must be changed to "Run as Viewer". Click inside the input box, and a dropdown will show all users and groups with whom the query can be shared.</p>
+    <ol start="14">
+        <li>Select a user or group</li>
+        <li>Select either "Can run" or "Can edit" permissions</li>
+        <li>Close the dialogue</li>
+    </ol>   
+    <p>Note that any "Can edit" permissions that were granted must be revoked before the credential type for the query can be changed back to "Run as owner".</p>
     </div>
     
     </div>
-        <div style="width:800px;">
-            <textarea id="step-4-ta" style="width:780px; padding:10px" rows="3">USE {db_name};
-UPDATE customers SET loyalty_segment = 0 WHERE loyalty_segment = 10;
-DESCRIBE HISTORY customers;</textarea>
-            <textarea id="step-4-backup" style="display:none;">USE {db_name};
-UPDATE customers SET loyalty_segment = 0 WHERE loyalty_segment = 10;
-DESCRIBE HISTORY customers;</textarea>
+        <div style="width:800px; display: none;">
+            <textarea id="step-4-ta" style="width:780px; padding:10px" rows="1"></textarea>
+            <textarea id="step-4-backup" style="display:none;"></textarea>
         </div>
-        <div style="width:800px; text-align:right;">
+        <div style="width:800px; text-align:right; display: none;">
             <button id="step-4-btn" type="button"  onclick="
                 let ta = document.getElementById('step-4-ta');
                 ta.select();
@@ -150,26 +182,19 @@ DESCRIBE HISTORY customers;</textarea>
                 navigator.clipboard.writeText(ta.value);">Copy</button>
         </div>
         </div><hr/>
-<div id="step-5-wrapper" style="width:800px"><div id="step-5-instruction" style="margin-bottom:1em">    
-
-   <h3>SELECT on Delta Tables -- VERSION AS OF</h3>
+<div id="step-5-wrapper" style="width:800px"><div id="step-5-instruction" style="margin-bottom:1em"><h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
+Sharing Dashboards</h2>
     <div class="instructions-div">
-    <p>We can now use a special predicate for use with Delta tables: <span class="monofont">VERSION AS OF</span></p>
-    <ol start="4">
-        <li>Run the code below.</li>
-    </ol>
-    <p>By using <span class="monofont">VERSION AS OF</span>, we can <span class="monofont">SELECT</span> from specific versions of the table. This feature of Delta tables is called "Time Travel," and is very powerful.</p>
-    <p>We can also use <span class="monofont">TIMESTAMP AS OF</span> to <span class="monofont">SELECT</span>based on a table's state on a specific date, and you can find more information in the documentation.</p>
+    <p>Sharing dashboards is exactly the same as sharing queries. Click "Share" from any dashboard to update sharing permissions.</p>
+       
     </div>
     
     </div>
-        <div style="width:800px;">
-            <textarea id="step-5-ta" style="width:780px; padding:10px" rows="2">USE {db_name};
-SELECT loyalty_segment FROM customers VERSION AS OF 1;</textarea>
-            <textarea id="step-5-backup" style="display:none;">USE {db_name};
-SELECT loyalty_segment FROM customers VERSION AS OF 1;</textarea>
+        <div style="width:800px; display: none;">
+            <textarea id="step-5-ta" style="width:780px; padding:10px" rows="1"></textarea>
+            <textarea id="step-5-backup" style="display:none;"></textarea>
         </div>
-        <div style="width:800px; text-align:right;">
+        <div style="width:800px; text-align:right; display: none;">
             <button id="step-5-btn" type="button"  onclick="
                 let ta = document.getElementById('step-5-ta');
                 ta.select();
@@ -177,33 +202,28 @@ SELECT loyalty_segment FROM customers VERSION AS OF 1;</textarea>
                 navigator.clipboard.writeText(ta.value);">Copy</button>
         </div>
         </div><hr/>
-<div id="step-6-wrapper" style="width:800px"><div id="step-6-instruction" style="margin-bottom:1em">    
-
-    <h3>MERGE INTO</h3>
+<div id="step-6-wrapper" style="width:800px"><div id="step-6-instruction" style="margin-bottom:1em"><h2><img class="image-icon-inline" src="https://s3.us-west-2.amazonaws.com/files.training.databricks.com/images/step-icon_small.png" alt="heading-icon" />
+Refreshing Dashboards and Sharing Results</h2>
     <div class="instructions-div">
-    <p>Certainly, there are times when we want to insert new data but ensure we don't re-insert matched data. This is where we use <span class="monofont">MERGE INTO</span>. <span class="monofont">MERGE INTO</span> will merge two tables together, but you specify in which column to look for matched data and what to do when a match is found. Let's run the code and examine the command in more detail.</p>
-    <ol start="5">
-        <li>Run the code below.</li>
-    </ol>
-    <p>We are merging the <span class="monofont">source_suppliers</span> table into the <span class="monofont">suppliers</span> table. After <span class="monofont">ON</span> keyword, we provide the columns on which we want to look for matches. We then state what the command should do when a match is found. In this example, we are inserting the row when the two columns are not matched. Thus, if the columns match, the row is ignored. Notice that the count is the exact same as the original table. This is because the two tables have the exact same data, since we overwrote the <span class="monofont">suppliers</span> table with the <span class="monofont">source_suppliers</span> table earlier in the lesson.</p>
+    <p>We can set a refresh schedule for a dashboard and, optionally, share the results with others.</p>
+    <ol start="17">
+        <li>From any dashboard, click "Schedule"</li>
+        <li>Drop down "Refresh" and select a refresh interval</li>
+        <li>Optionally, select a SQL Warehouse to use to refresh the dashboard</li>
+        <li>Set any Subscribers to be notified of dashboard results</li>
+        <li>Ensure that "Enabled" is set to on</li>
+        <li>Click "Save"</li>
+    </ol>    
+    <p>When you are finished with the dashboard refresh schedule, go ahead and disable it.</p>
+    <p><span style="color:red">WARNING: If the Dashboard refresh interval is less than the SQL Warehouse 'Auto Stop' parameter, the Warehouse will run indefinitely.</span></p>
     </div>
     
     </div>
-        <div style="width:800px;">
-            <textarea id="step-6-ta" style="width:780px; padding:10px" rows="6">USE {db_name};
-MERGE INTO suppliers
-    USING source_suppliers
-    ON suppliers.SUPPLIER_ID = source_suppliers.SUPPLIER_ID
-    WHEN NOT MATCHED THEN INSERT *;
-SELECT count(*) FROM suppliers;</textarea>
-            <textarea id="step-6-backup" style="display:none;">USE {db_name};
-MERGE INTO suppliers
-    USING source_suppliers
-    ON suppliers.SUPPLIER_ID = source_suppliers.SUPPLIER_ID
-    WHEN NOT MATCHED THEN INSERT *;
-SELECT count(*) FROM suppliers;</textarea>
+        <div style="width:800px; display: none;">
+            <textarea id="step-6-ta" style="width:780px; padding:10px" rows="1"></textarea>
+            <textarea id="step-6-backup" style="display:none;"></textarea>
         </div>
-        <div style="width:800px; text-align:right;">
+        <div style="width:800px; text-align:right; display: none;">
             <button id="step-6-btn" type="button"  onclick="
                 let ta = document.getElementById('step-6-ta');
                 ta.select();
@@ -214,7 +234,7 @@ SELECT count(*) FROM suppliers;</textarea>
             function answerIs(self, expected) {
                 if (self.value === "") {
                     self.style.backgroundColor="#ffffff";
-                } else if (expected.includes(self.value.toLowerCase())) {
+                } else if (self.value.toLowerCase().includes(expected)) {
                     self.style.backgroundColor="#7ffe78";
                 } else {
                     self.style.backgroundColor="#ffb9bb";
@@ -228,10 +248,15 @@ SELECT count(*) FROM suppliers;</textarea>
                         let key_value = parts[i].trim();
                         let key = key_value.split("=")[0].trim();
                         let value = key_value.split("=")[1].trim();
-
-                        if (key == "dawd_db_name") document.getElementById("db_name").value = value;
-                        else if (key == "dawd_username") document.getElementById("username").value = value;
-                        else console.log("Unknown cookie: "+key);
+                        if (value != "n/a") {
+                            if (key == "dawd_db_name") {
+                                document.getElementById("db_name").value = value;
+                            } else if (key == "dawd_username") {
+                                document.getElementById("username").value = value;
+                            } else {
+                                console.log("Unknown cookie: "+key);
+                            }
+                        }
                     }
                 }
                 update();
