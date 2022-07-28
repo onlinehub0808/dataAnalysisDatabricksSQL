@@ -1,3 +1,4 @@
+# Databricks notebook source
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>DAWD 03-4 - Demo - Notifying Stakeholders</title>
             <link href='https://fonts.googleapis.com/css?family=DM Sans' rel='stylesheet'>
             <style>
@@ -34,10 +35,9 @@
                         style="width: 600px; margin-left: 100px; margin-right: 100px">
 <hr/>
 <h1>DAWD 03-4 - Demo - Notifying Stakeholders</h1>
-        <p>The two fields below are used to customize queries used in this course. Enter your schema (database) name and username, and press "Enter" to populate necessary information in the queries on this page.</p>
         <table>
             <tr>
-                <td style="white-space:nowrap">Schema Name:&nbsp;</td>
+                <td style="white-space:nowrap">Database Name:&nbsp;</td>
                 <td><input id="db_name" type="text" style="width:40em" onchange="update();"></td>
             </tr><tr>
                 <td style="white-space:nowrap">Username:&nbsp;</td>
@@ -82,22 +82,18 @@ Query Refresh Schedule</h2>
     <ol start="4">
         <li>Click "Never" next to "Refresh Schedule" (bottom-right corner of query window)</li>
         <li>Change the dropdown to something other than "Never"</li>
-        <li>Change "End" to tomorrow's date</li>
+        <li>Optionally, change "End" to a specific date</li>
     </ol>
-    <p><span style="color:red">WARNING: If the refresh rate is less than the SQL Warehouse 'Auto Stop' parameter, the Warehouse will run indefinitely.</span></p>
+    <p></p>
     </div></div>
         <div style="width:800px;">
-            <textarea id="step-2-ta" style="width:780px; padding:10px" rows="7">USE {db_name};
+            <textarea id="step-2-ta" style="width:780px; padding:10px" rows="5">USE {db_name};
 SELECT gym, count(*) number_of_visits 
-    
-
 FROM gym_logs
 GROUP BY gym
 ORDER BY gym;</textarea>
             <textarea id="step-2-backup" style="display:none;">USE {db_name};
 SELECT gym, count(*) number_of_visits 
-    
-
 FROM gym_logs
 GROUP BY gym
 ORDER BY gym;</textarea>
@@ -128,10 +124,8 @@ Alerts</h2>
         <li>Run the code below.</li>
     </ol>
     <p>This code will ingest the remaining gym log data from the object store. This will increase the number of gym visits past our threshold and trigger the alert.</p>
-    <p>Something to note with regard to configuring Alerts and Refresh Schedules: Every time they run, the SQL Warehouse will start (if it's stopped), run the query, and go into an idle state. Once the Auto Stop time has expired, the SQL Warehouse will stop. If the refresh schedule is set to a lower time limit than the SQL Warehouse's Auto Stop time, the Warehouse will never stop. This may increase costs.</p>
-    <ol start="13">
-        <li>Delete the alert and change the refresh schedule back to "Never".</li>
-    </ol>
+    <p>Something to note with regard to configuring Alerts and Refresh Schedules: Every time they run, the Endpoint will start (if it's stopped), run the query, and go into an idle state. Once the Auto Stop time has expired, the Endpoint will stop. If the refresh schedule is set to a lower time limit than the Endpoint's Auto Stop time, the Endpoint will never stop. This may increase costs.</p>
+    <p>Go ahead and delete the alert and change the refresh schedule back to "Never".</p>
     </div>
     
     </div>
@@ -209,13 +203,11 @@ Refreshing Dashboards and Sharing Results</h2>
     <ol start="17">
         <li>From any dashboard, click "Schedule"</li>
         <li>Drop down "Refresh" and select a refresh interval</li>
-        <li>Optionally, select a SQL Warehouse to use to refresh the dashboard</li>
+        <li>Optionally, select a SQL Endpoint to use to refresh the dashboard</li>
         <li>Set any Subscribers to be notified of dashboard results</li>
         <li>Ensure that "Enabled" is set to on</li>
         <li>Click "Save"</li>
     </ol>    
-    <p>When you are finished with the dashboard refresh schedule, go ahead and disable it.</p>
-    <p><span style="color:red">WARNING: If the Dashboard refresh interval is less than the SQL Warehouse 'Auto Stop' parameter, the Warehouse will run indefinitely.</span></p>
     </div>
     
     </div>
@@ -234,7 +226,7 @@ Refreshing Dashboards and Sharing Results</h2>
             function answerIs(self, expected) {
                 if (self.value === "") {
                     self.style.backgroundColor="#ffffff";
-                } else if (self.value.toLowerCase().includes(expected)) {
+                } else if (expected.includes(self.value.toLowerCase())) {
                     self.style.backgroundColor="#7ffe78";
                 } else {
                     self.style.backgroundColor="#ffb9bb";
@@ -248,15 +240,9 @@ Refreshing Dashboards and Sharing Results</h2>
                         let key_value = parts[i].trim();
                         let key = key_value.split("=")[0].trim();
                         let value = key_value.split("=")[1].trim();
-                        if (value != "n/a") {
-                            if (key == "dawd_db_name") {
-                                document.getElementById("db_name").value = value;
-                            } else if (key == "dawd_username") {
-                                document.getElementById("username").value = value;
-                            } else {
-                                console.log("Unknown cookie: "+key);
-                            }
-                        }
+
+                        if (key == "db_name") document.getElementById("db_name").value = value;
+                        if (key == "username") document.getElementById("username").value = value;
                     }
                 }
                 update();
@@ -280,8 +266,7 @@ Refreshing Dashboards and Sharing Results</h2>
                         document.getElementById(ids[i]+"-btn").disabled = false;
 
                         let ba = document.getElementById(ids[i]+"-backup");
-                        let value = ba.value.replaceAll("{db_name}", db_name)
-                                            .replaceAll("{username}", username);
+                        let value = ba.value.replaceAll("{db_name}", db_name).replaceAll("{username}", username);
 
                         document.getElementById(ids[i]+"-ta").value = value
 
