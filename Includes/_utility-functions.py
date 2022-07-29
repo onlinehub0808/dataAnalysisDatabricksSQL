@@ -966,6 +966,7 @@ DBAcademyHelper.monkey_patch(create_user_specific_databases)
 # COMMAND ----------
 
 configure_for_options = ["", "All Users", "Missing Users Only", "Current User Only"]
+valid_configure_for_options = ["All Users", "Missing Users Only", "Current User Only"]
 
 def initialize_workspace_setup(self):
     import re
@@ -973,12 +974,12 @@ def initialize_workspace_setup(self):
 
     # Special logic for when we are running under test.
     is_smoke_test = spark.conf.get("dbacademy.smoke-test", "false") == "true"
-
+    
     if is_smoke_test:     self.configure_for = "Current User Only"
-    elif dbgems.is_job(): self.configure_for = "Missing Users"
+    elif dbgems.is_job(): self.configure_for = "Missing Users Only"
     else:                 self.configure_for = dbutils.widgets.get("configure_for")
     
-    assert self.configure_for in ["All Users", "Missing Users Only", "Current User Only"], f"Who the workspace is being configured for must be specified: {self.configure_for}"
+    assert self.configure_for in ["All Users", "Missing Users Only", "Current User Only"], f"Who the workspace is being configured for must be specified, found \"{self.configure_for}\". Options include {valid_configure_for_options}"
 
     if self.configure_for == "Current User Only":
         # Override for the current user only
@@ -1015,10 +1016,11 @@ def initialize_workspace_setup(self):
     self.autoscale_max = 1 if is_smoke_test else math.ceil(self.students_count/5)
 
     self.event_name = "Smoke Test" if is_smoke_test else dbutils.widgets.get("event_name")
-    assert self.event_name is not None and len(self.event_name) >= 3, f"The event_name must be specified with min-length of 3"
+    assert self.event_name is not None and len(self.event_name) >= 3, f"The event_name must be specified with min-length of 3, found \"{self.event_name}\"."
     self.event_name = re.sub("[^a-zA-Z0-9]", "_", self.event_name)        
     while "__" in self.event_name: self.event_name = self.event_name.replace("__", "_")
         
+    print(f"Event Name:        {self.event_name}")
     print(f"Configured for:    {self.configure_for}")
     print(f"Student Count:     {self.students_count}")
     print(f"Provisioning:      {len(self.usernames)}")
