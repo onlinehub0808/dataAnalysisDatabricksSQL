@@ -965,6 +965,19 @@ DBAcademyHelper.monkey_patch(create_user_specific_databases)
 
 # COMMAND ----------
 
+def get_widget_or_else(self, name, default=None):
+    from py4j.protocol import Py4JJavaError
+    try:
+        result = dbutils.widgets.get(name)
+        return result or default
+    except Py4JJavaError as ex:
+        if "InputWidgetNotDefined" not in ex.java_exception.getClass().getName():
+            raise ex
+        else:
+            return default
+
+DBAcademyHelper.monkey_patch(get_widget_or_else)
+
 configure_for_options = ["", "All Users", "Missing Users Only", "Current User Only"]
 valid_configure_for_options = ["All Users", "Missing Users Only", "Current User Only"]
 
@@ -975,8 +988,8 @@ def initialize_workspace_setup(self):
     # Special logic for when we are running under test.
     is_smoke_test = spark.conf.get("dbacademy.smoke-test", "false") == "true"
     
-    if is_smoke_test:     self.configure_for = "Current User Only"
-    elif dbgems.is_job(): self.configure_for = "Missing Users Only"
+    if is_smoke_test:     self.configure_for = self.get_widget_or_else("configure_for", "Current User Only")
+    elif dbgems.is_job(): self.configure_for = self.get_widget_or_else("configure_for", "Missing Users Only")
     else:                 self.configure_for = dbutils.widgets.get("configure_for")
     
     assert self.configure_for in ["All Users", "Missing Users Only", "Current User Only"], f"Who the workspace is being configured for must be specified, found \"{self.configure_for}\". Options include {valid_configure_for_options}"
