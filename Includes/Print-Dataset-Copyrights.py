@@ -4,10 +4,9 @@
 # COMMAND ----------
 
 DA = DBAcademyHelper(**helper_arguments)
+DA.init(install_datasets=True, create_db=False)
 
-DA.validate_datasets(fail_fast=True, repairing_dataset=False)
+# COMMAND ----------
 
-DA.publisher = Publisher()
-
-DA.conclude_setup()
+DA.print_copyrights()
 

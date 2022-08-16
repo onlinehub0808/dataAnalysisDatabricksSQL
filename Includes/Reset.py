@@ -12,12 +12,12 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./_utility-functions
+# MAGIC %run ./_common
 
 # COMMAND ----------
 
-DA = DBAcademyHelper()
-user_db = Step.to_db_name(DA.username, DA.naming_template, DA.naming_params)
+DA = DBAcademyHelper(**helper_arguments)
+user_db = DA.get_database_name()
 
 rows = spark.sql("SHOW DATABASES").collect()
 for row in rows:
@@ -26,16 +26,11 @@ for row in rows:
         print(f"Dropping database {db_name}")
         spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE")
 
-datasets = f"dbfs:/mnt/dbacademy-datasets/{DA.data_source_name}"
-dbutils.fs.rm(datasets, True)
+result = dbutils.fs.rm(DA.paths.datasets, True)
+print(f"Deleted {DA.paths.datasets}: {result}")
 
-result = dbutils.fs.rm(DA.working_dir_prefix, True)
-print(f"Deleted {DA.working_dir_prefix}: {result}")
-
-# COMMAND ----------
-
-DA.install_datasets(reinstall=False)
-print("Course environment succesfully reset")
+result = dbutils.fs.rm(DA.paths._working_dir_root, True)
+print(f"Deleted {DA.paths._working_dir_root}: {result}")
 
 # COMMAND ----------
 

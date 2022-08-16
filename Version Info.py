@@ -10,8 +10,17 @@
 # MAGIC %md # Project Information
 # MAGIC 
 # MAGIC * Name: **Data Analysis with Databricks**
-# MAGIC * Version:  **1.1.5**
-# MAGIC * Built On: **Jul 31, 2022 at 21:51:45 UTC**
+# MAGIC * Version:  **1.1.6**
+# MAGIC * Built On: **Aug 16, 2022 at 15:47:37 UTC**
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Run the following cell for additional information on this course's datasets, and their copyrights.
+
+# COMMAND ----------
+
+# MAGIC %run ./Includes/Print-Dataset-Copyrights
 
 # COMMAND ----------
 

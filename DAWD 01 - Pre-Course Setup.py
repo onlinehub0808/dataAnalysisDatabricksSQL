@@ -10,19 +10,20 @@
 # MAGIC %md
 # MAGIC # Pre-Course Setup
 # MAGIC 
-# MAGIC Run this notebook just before class to ensure all assets are ready.
+# MAGIC Run this notebook before class to ensure all assets are ready.
 # MAGIC 
 # MAGIC The steps include:
 # MAGIC 1. Configure User Permissions
 # MAGIC 2. Install the Datasets to the Workspace
 # MAGIC 3. Create SQL Warehouse
 # MAGIC 4. Create User-Specific Databases
-# MAGIC 5. Pre-Load Tables
-# MAGIC 6. Update User-Specific Grants
+# MAGIC 5. Update User-Specific Grants
+# MAGIC 
+# MAGIC <img src="https://files.training.databricks.com/images/icon_note_24.png"/> The execution duration of this notebook can vary between 5 and 15 minutes depending on region, vm availability and other uncontrollable factors.
 
 # COMMAND ----------
 
-# MAGIC %run ./Includes/Classroom-Setup
+# MAGIC %run ./Includes/Classroom-Setup-01
 
 # COMMAND ----------
 
@@ -64,7 +65,7 @@ DA.update_entitlements()
 # MAGIC ### Step 2: Install the Datasets to the Workspace
 # MAGIC This task will copy data from our Azure data repository into the workspace, creating a local copy that all students will share. 
 # MAGIC 
-# MAGIC This will be "installed" to **/mnt/dbacademy-datasets/data-analysis-with-databricks/v01**.
+# MAGIC This will be "installed" to **/mnt/dbacademy-datasets/data-analysis-with-databricks/v02**.
 # MAGIC 
 # MAGIC To complete this step, simply run the following command.
 # MAGIC 
@@ -72,7 +73,7 @@ DA.update_entitlements()
 
 # COMMAND ----------
 
-DA.install_datasets(reinstall=False)
+DA.install_datasets(reinstall_datasets=False)
 
 # COMMAND ----------
 
@@ -100,41 +101,38 @@ DA.create_shared_sql_warehouse()
 
 # MAGIC %md
 # MAGIC ### Step 4: Create User-Specific Databases
-# MAGIC This task will create one Database per user.
 # MAGIC 
-# MAGIC To complete this step, simply run the following command.
+# MAGIC This tasks will create one database per user and corresponding tables from the datasets installed to **/mnt/dbacademy-datasets/data-analysis-with-databricks/v02**.
+# MAGIC 
+# MAGIC Run the following cell to create each database with the prescribed tables.
 
 # COMMAND ----------
 
-DA.create_user_specific_databases()
+DA.create_student_databases(drop_existing=False)
 
 # COMMAND ----------
 
-# MAGIC %md ### Step 5: Pre-Load Tables
-# MAGIC 
-# MAGIC This tasks will create tables in each user-specific database and load the prescribed data from **/mnt/dbacademy-datasets/data-analysis-with-databricks**.
-# MAGIC 
-# MAGIC Run the following cell to pre-load each database with the prescribed tables.
-# MAGIC 
-# MAGIC <img src="https://files.training.databricks.com/images/icon_warn_24.png"/> This operation takes about 1 minute per user - for a class of 20, this could take as long as 20 minutes to complete.
-
-# COMMAND ----------
-
-DA.preload_student_databases()
-
-# COMMAND ----------
-
-# MAGIC %md ### Step 6: Update User-Specific Grants
+# MAGIC %md ### Step 5: Update User-Specific Grants
 # MAGIC 
 # MAGIC Grant each user access to their personal databases.
 # MAGIC 
 # MAGIC To comlete this step, simply run the following command.
-# MAGIC 
-# MAGIC <img src="https://files.training.databricks.com/images/icon_warn_24.png"/> This operation should only take 3 minutes.
 
 # COMMAND ----------
 
-DA.update_user_specific_grants()
+# Create a job using an HA cluster to update user permissions.
+# For reference, this job runs the notebook Includes/Configure-Permissions
+print(f"Smoke Test: {DA.is_smoke_test()}")
+job_name = DA.update_user_specific_grants()
+
+# COMMAND ----------
+
+# Delete the lingering job only if it succeeded.
+DA.client.jobs().delete_by_name(job_name, success_only=True)
+
+# COMMAND ----------
+
+DA.setup_completed()
 
 # COMMAND ----------
 
