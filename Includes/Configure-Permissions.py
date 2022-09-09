@@ -1,7 +1,7 @@
 # Databricks notebook source
-# MAGIC %run ./Classroom-Setup-01
+# MAGIC %run ./Configure-Permissions-Setup
 
 # COMMAND ----------
 
-DA.do_for_all_users(DA.update_user_grants)
+DA.workspace.do_for_all_users(DA.update_user_grants)
 

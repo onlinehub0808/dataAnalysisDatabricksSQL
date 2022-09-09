@@ -28,7 +28,7 @@
 # COMMAND ----------
 
 # Setup the widgets to collect required parameters.
-dbutils.widgets.dropdown("configure_for", "", configure_for_options, "Configure Workspace For")
+dbutils.widgets.dropdown("configure_for", "", DA.workspace.configure_for_options, "Configure Workspace For")
 
 # students_count is the reasonable estiamte to the maximum number of students
 dbutils.widgets.text("students_count", "", "Number of Students")
@@ -38,13 +38,10 @@ dbutils.widgets.text("event_name", "", "Event Name/Class Number")
 
 # COMMAND ----------
 
-# Collect our parameters and create addtional parameters
-DA.initialize_workspace_setup()
-
-# COMMAND ----------
-
 # MAGIC %md ## Setup Steps
-# MAGIC The following steps document how to configure the workspace for this class. This includes adjusting permissions, installing datasets, creating SQL Warehouses and user-specific databases.
+# MAGIC The following steps document how to configure the workspace for this class.
+# MAGIC 
+# MAGIC This includes adjusting permissions, installing datasets, creating SQL Warehouses and user-specific databases.
 
 # COMMAND ----------
 
@@ -54,6 +51,9 @@ DA.initialize_workspace_setup()
 # MAGIC This task simply adds the "**databricks-sql-access**" entitlement to the "**users**" group ensuring that they can access the Databricks SQL view.
 # MAGIC 
 # MAGIC To complete this step, simply run the following command.
+# MAGIC 
+# MAGIC <img src="https://files.training.databricks.com/images/icon_note_24.png"/> Consider manually removing access to the **Data Science & Engineering** view to prevent students from opening the wrong view.  
+# MAGIC This can be done by removing the **Workspace access** entitlement for the **users** group in the **Admin Console**.
 
 # COMMAND ----------
 
@@ -63,7 +63,7 @@ DA.update_entitlements()
 
 # MAGIC %md
 # MAGIC ### Step 2: Install the Datasets to the Workspace
-# MAGIC This task will copy data from our Azure data repository into the workspace, creating a local copy that all students will share. 
+# MAGIC This task will copy data from our data repository into the workspace, creating a local copy that all students will share. 
 # MAGIC 
 # MAGIC This will be "installed" to **/mnt/dbacademy-datasets/data-analysis-with-databricks/v02**.
 # MAGIC 
@@ -79,23 +79,19 @@ DA.install_datasets(reinstall_datasets=False)
 
 # MAGIC %md
 # MAGIC ### Step 3: Create SQL Warehouse
-# MAGIC This task will create one SQL Warehouse for the whole class. 
+# MAGIC This task will create one SQL Warehouse for the whole class named **`DBAcademy Warehouse`**
 # MAGIC 
-# MAGIC Upon completion the warehouse will be "**Running**"
+# MAGIC Upon completion the warehouse will be "**Running**".
 # MAGIC 
 # MAGIC To complete this step, simply run the following command.
 # MAGIC 
 # MAGIC <img src="https://files.training.databricks.com/images/icon_warn_24.png"/> If the warehouse is created hours-to-days before a class, all warehouses should be stopped so as not to consume unnecissary charges between the point of creation and first usage by students.
 # MAGIC 
-# MAGIC <img src="https://files.training.databricks.com/images/icon_warn_24.png"/> If the warehouse already exists but is not started, it will not be updated and it will not be started - the students or the instructor will be reponsible for starting the warehouse.
+# MAGIC <img src="https://files.training.databricks.com/images/icon_warn_24.png"/> If the warehouse already exists but is not started, it **will** be updated but those changes may not appear until started - the instructor will be reponsible for starting the warehouse.
 
 # COMMAND ----------
 
-# Creates one per user - please do not students
-# DA.create_sql_warehouses()
-
-# Creates one shared warehouse for all students
-DA.create_shared_sql_warehouse()
+DA.workspace.warehouses.create_shared_sql_warehouse()
 
 # COMMAND ----------
 
@@ -108,7 +104,7 @@ DA.create_shared_sql_warehouse()
 
 # COMMAND ----------
 
-DA.create_student_databases(drop_existing=False)
+DA.create_user_databases(drop_existing=False)
 
 # COMMAND ----------
 
@@ -116,19 +112,33 @@ DA.create_student_databases(drop_existing=False)
 # MAGIC 
 # MAGIC Grant each user access to their personal databases.
 # MAGIC 
-# MAGIC To comlete this step, simply run the following command.
+# MAGIC This requires creating a job using an HA cluster to update user permissions.
+# MAGIC 
+# MAGIC For reference, this job runs the notebook **Includes/Configure-Permissions**
+# MAGIC 
+# MAGIC To complete this step, simply run the following command.
 
 # COMMAND ----------
 
-# Create a job using an HA cluster to update user permissions.
-# For reference, this job runs the notebook Includes/Configure-Permissions
-print(f"Smoke Test: {DA.is_smoke_test()}")
-job_name = DA.update_user_specific_grants()
+# The logic here changes depending on if we are executing
+# this notebook directly, or if an automation job called 
+# Workspace-Setup which in turn calls this notebook.
+
+current_notebook = dbgems.get_notebook_name()
+if current_notebook == "Workspace-Setup":
+    notebook_name = "Configure-Permissions"
+else:
+    notebook_name = "Includes/Configure-Permissions"
+
+print(f"current_notebook: {current_notebook}")
+print(f"notebook_name:    {notebook_name}")
+print()
+    
+job_id = DA.workspace.databases.configure_permissions(notebook_name=notebook_name)
 
 # COMMAND ----------
 
-# Delete the lingering job only if it succeeded.
-DA.client.jobs().delete_by_name(job_name, success_only=True)
+DA.client.jobs().delete_by_id(job_id)
 
 # COMMAND ----------
 
