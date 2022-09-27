@@ -20,5 +20,5 @@ def update_user_grants(self, username: str):
 DA = DBAcademyHelper(**helper_arguments)
 # DA.reset_environment()
 # DA.init(install_datasets=True, create_db=True)
-DA.conclude_setup()
+# DA.conclude_setup()
 

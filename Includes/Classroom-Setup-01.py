@@ -27,5 +27,5 @@ def setup_completed(self):
 DA = DBAcademyHelper(**helper_arguments)
 DA.reset_environment()
 # DA.init(install_datasets=False, create_db=True)
-DA.conclude_setup()
+# DA.conclude_setup()
 
