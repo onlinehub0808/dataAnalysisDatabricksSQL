@@ -2,7 +2,7 @@
 # MAGIC %pip install \
 # MAGIC git+https://github.com/databricks-academy/dbacademy-gems@63bb19389fd2296f6cc5a74e463ab52ab1548767 \
 # MAGIC git+https://github.com/databricks-academy/dbacademy-rest@96351a554ed00b664e7c2d97249805df5611be06 \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-helper@4eb2ef446ccf26f6bb7cd1298ec21143c222f9c3 \
+# MAGIC git+https://github.com/databricks-academy/dbacademy-helper@83de4080d8f0a00ceaeab7822069911d49f73336 \
 # MAGIC --quiet --disable-pip-version-check
 
 # COMMAND ----------
@@ -278,7 +278,9 @@ class Publisher:
                 let username = document.getElementById("username").value;
                 let ids = {ids};
 
-                if (db_name === "" || username === "" || db_name === null || username === null) {{
+                if (db_name === null || username === null || 
+                    db_name === "" || username === "" || 
+                    db_name == "n/a" || username === "n/a") {{
                     for (let i = 0; i < ids.length; i++) {{
                         document.getElementById(ids[i]+"-test-ta").disabled = true;
                         document.getElementById(ids[i]+"-sql-ta").disabled = true;
@@ -343,7 +345,7 @@ class Publisher:
         html += f"""
         <hr/>
         <div>
-            <div>&copy {date.today().year} Databricks, Inc. All rights reserved.</div>
+            <div>&copy; {date.today().year} Databricks, Inc. All rights reserved.</div>
             <div>Apache, Apache Spark, Spark and the Spark logo are trademarks of the <a href="https://www.apache.org/">Apache Software Foundation</a>.</div>
             <div style="margin-top:1em">
                 <div style="float:left">

@@ -17,20 +17,7 @@
 # COMMAND ----------
 
 DA = DBAcademyHelper(**helper_arguments)
-user_db = DA.get_database_name()
-
-rows = spark.sql("SHOW DATABASES").collect()
-for row in rows:
-    db_name = row[0]
-    if db_name.startswith(user_db):
-        print(f"Dropping database {db_name}")
-        spark.sql(f"DROP DATABASE IF EXISTS {db_name} CASCADE")
-
-result = dbutils.fs.rm(DA.paths.datasets, True)
-print(f"Deleted {DA.paths.datasets}: {result}")
-
-result = dbutils.fs.rm(DA.paths._working_dir_root, True)
-print(f"Deleted {DA.paths._working_dir_root}: {result}")
+DA.reset_learning_environment()
 
 # COMMAND ----------
 
