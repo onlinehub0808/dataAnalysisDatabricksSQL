@@ -3,21 +3,47 @@
 
 # COMMAND ----------
 
-DA = DBAcademyHelper(**helper_arguments)
+@DBAcademyHelper.monkey_patch
+def create_user_databases(self, drop_existing=False):
+    self.workspace.databases.create_databases(drop_existing=drop_existing, 
+                                              post_create=self.populate_database)
 
-if dbgems.get_parameter(GENERATING_DOCS, False) == False:
-    
-    # Setup the environment only if we are generating docs
-    DA.reset_environment()
-    DA.init(install_datasets=True, create_db=True)
+# COMMAND ----------
 
-    # This is here to facilitate asycronous testing where each test
-    # run is using a different database and thus needs to be reseeded
-    DA.populate_database(DA.db_name, verbose=True)
-    
-    DA.conclude_setup()
+@DBAcademyHelper.monkey_patch
+def update_entitlements(self):
+    group = self.client.scim.groups.get_by_name("users")
+    self.client.scim.groups.add_entitlement(group.get("id"), "databricks-sql-access")
+        
+
+# COMMAND ----------
+
+@DBAcademyHelper.monkey_patch
+def setup_completed(self):
+    print(f"\nSetup completed in {int(time.time())-setup_start} seconds")
+
+# COMMAND ----------
+
+# The setup notebook will create databases and install datasets for us 
+# so we don't need DBAcademyHelper.init() to do it for us here.
+workspace_setup = dbgems.get_notebook_name() in ["Workspace-Setup", "DAWD 01 - Pre-Course Setup"]
+not_setup = not workspace_setup  # just for readability
+
+lesson_config.create_schema = not_setup        # Only create schema if this is not setup
+lesson_config.installing_datasets = not_setup  # Only instal the datasets if this is not setup
+
+DA = DBAcademyHelper(course_config, lesson_config)
+
+if workspace_setup or dbgems.is_generating_docs():
+    # When running the setup notebooks or when generating docs we 
+    # don't need to call these lesson-specific commands, just init()
+    DA.init()
+else:
+    # In all other cases, configure as-if a lesson
+    DA.reset_lesson()
+    DA.init()
+    DA.populate_database(DA.username, DA.schema_name, verbose=True)
 
 DA.publisher = Publisher(DA)
-
-
+DA.conclude_setup()
 

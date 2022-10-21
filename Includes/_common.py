@@ -1,9 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-gems@63bb19389fd2296f6cc5a74e463ab52ab1548767 \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-rest@96351a554ed00b664e7c2d97249805df5611be06 \
-# MAGIC git+https://github.com/databricks-academy/dbacademy-helper@83de4080d8f0a00ceaeab7822069911d49f73336 \
-# MAGIC --quiet --disable-pip-version-check
+# MAGIC %run ./_libraries
 
 # COMMAND ----------
 
@@ -12,63 +8,71 @@
 # COMMAND ----------
 
 import time
-from dbacademy_gems import dbgems
-from dbacademy_helper import DBAcademyHelper
+from dbacademy import dbgems
+from dbacademy.dbhelper import DBAcademyHelper, CourseConfig, LessonConfig
 
-GENERATING_DOCS = "generating_docs"
+course_config = CourseConfig(course_code = "dawd",
+                             course_name = "data-analysis-with-databricks-sql",
+                             data_source_name = "data-analysis-with-databricks",
+                             data_source_version = "v02",
+                             install_min_time = "1 min",
+                             install_max_time = "5 min",
+                             remote_files = remote_files,
+                             supported_dbrs = ["11.3.x-scala2.12"],
+                             expected_dbrs = "11.3.x-scala2.12")
 
-# The following attributes are externalized to make them easy
-# for content developers to update with every new course.
-# noinspection PyUnresolvedReferences
-helper_arguments = {
-    "course_code": "dawd",                                # The abbreviated version of the course
-    "course_name": "data-analysis-with-databricks-sql",   # The full name of the course, hyphenated
-    "data_source_name": "data-analysis-with-databricks",  # Should be the same as the course
-    "data_source_version": "v02",                         # New courses would start with 01
-    "enable_streaming_support": False,                    # This course uses stream and thus needs checkpoint directories
-    "install_min_time": "1 min",                          # The minimum amount of time to install the datasets (e.g. from Oregon)
-    "install_max_time": "5 min",                          # The maximum amount of time to install the datasets (e.g. from India)
-    "remote_files": remote_files,                         # The enumerated list of files in the datasets
-}
-# Start a timer so we can 
-# benchmark execution duration.
+lesson_config = LessonConfig(name = None,
+                             create_schema = True,
+                             create_catalog = False,
+                             requires_uc = False,
+                             installing_datasets = True,
+                             enable_streaming_support = False)
+
+# Start a timer so we can benchmark execution duration.
+# This is only used by "DAWD 01 - Pre-Course Setup"
 setup_start = int(time.time())
 
 # COMMAND ----------
 
 @DBAcademyHelper.monkey_patch
-def clone_table(self, db_name, table_name, location, verbose=False):
-    import time
-    start = int(time.time())
-    if verbose: print(f"   cloning \"{table_name}\".", end="...")
-                      
-    name = f"{db_name}.{table_name}"
+def clone_table(self, username, schema_name, table_name, location, verbose=False):
+    start = self.clock_start()
+    existing_tables = [r["tableName"] for r in spark.sql(f"SHOW TABLES IN {schema_name}").collect()]
+    
+    if table_name in existing_tables: 
+        if verbose: print(f"| skipping \"{table_name}\"...{clock_stopped(start)}")
+        return
+    elif verbose: print(f"| cloning \"{table_name}\"", end="...")
+    
+    physical_location = f"dbfs:/mnt/dbacademy-users/{username}/{self.course_config.course_name}/database.db/{table_name}"
+    dbutils.fs.rm(physical_location, True)
+
+    name = f"{schema_name}.{table_name}"
     table_location = f"{self.paths.datasets}/{location}"
     dbgems.sql(f"CREATE TABLE IF NOT EXISTS {name} SHALLOW CLONE delta.`{table_location}`;")
                       
-    if verbose: print(f"({int(time.time())-start} seconds)")
+    if verbose: print(self.clock_stopped(start))
+
+    return f"  |created table \"{table_name}\"."
 
 # COMMAND ----------
 
 @DBAcademyHelper.monkey_patch
-def populate_database(self, db_name, verbose=False):
+def populate_database(self, username, schema_name, verbose=False):
     if verbose: print("\nCloning tables:")
     
-    self.clone_table(db_name, "flight_delays", "flights/departuredelays_delta", verbose=verbose)
-    self.clone_table(db_name, "sales", "retail-org/sales/sales_delta", verbose=verbose)
-    self.clone_table(db_name, "promo_prices", "retail-org/promo_prices/promo_prices_delta", verbose=verbose)
-    self.clone_table(db_name, "sales_orders", "retail-org/sales_orders/sales_orders_delta", verbose=verbose)
-    self.clone_table(db_name, "loyalty_segments", "retail-org/loyalty_segments/loyalty_segment_delta", verbose=verbose)
-    self.clone_table(db_name, "customers", "retail-org/customers/customers_delta", verbose=verbose)
-    self.clone_table(db_name, "suppliers", "retail-org/suppliers/suppliers_delta", verbose=verbose)
-    self.clone_table(db_name, "source_suppliers", "retail-org/suppliers/suppliers_delta", verbose=verbose)
-    self.clone_table(db_name, "gym_logs", "gym_logs/gym_logs_small_delta", verbose=verbose)
-
-# COMMAND ----------
-
-@DBAcademyHelper.monkey_patch
-def to_dawd_database_name(self, username: str):
-    return DBAcademyHelper.to_database_name(username, self.course_code)
+    msg = self.clone_table(username, schema_name, "flight_delays", "flights/departuredelays_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "sales", "retail-org/sales/sales_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "promo_prices", "retail-org/promo_prices/promo_prices_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "sales_orders", "retail-org/sales_orders/sales_orders_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "loyalty_segments", "retail-org/loyalty_segments/loyalty_segment_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "customers", "retail-org/customers/customers_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "suppliers", "retail-org/suppliers/suppliers_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "source_suppliers", "retail-org/suppliers/suppliers_delta", verbose=verbose)
+    msg += "\n"+self.clone_table(username, schema_name, "gym_logs", "gym_logs/gym_logs_small_delta", verbose=verbose)
+    
+    if verbose: print()
+    return msg.strip()
 
 # COMMAND ----------
 
@@ -160,7 +164,7 @@ class Publisher:
                     length=length)
 
         if include_use:
-            step.add("USE {db_name};")
+            step.add("USE {schema_name};")
 
         for statement in statements:
             step.add(statement)
@@ -229,7 +233,7 @@ class Publisher:
                     <table>
                         <tr>
                             <td style="white-space:nowrap">Schema Name:&nbsp;</td>
-                            <td><input id="db_name" type="text" style="width:40em" onchange="update();"></td>
+                            <td><input id="schema_name" type="text" style="width:40em" onchange="update();"></td>
                         </tr><tr>
                             <td style="white-space:nowrap">Username:&nbsp;</td>
                             <td><input id="username" type="text" style="width:40em" onchange="update();"></td>
@@ -247,7 +251,7 @@ class Publisher:
         # F-strings complicate how to compose the following block of code so we inject the
         # following tokens to skirt various escaping issues related to f-strings
         username_token = "{username}"     # The runtime token for the username
-        db_name_token = "{db_name}"       # The runtime token for the db_name
+        schema_name_token = "{schema_name}"       # The runtime token for the schema_name
         
         # Create the Javascript used to update the HTMl at runtime
         html += f"""<script type="text/javascript">
@@ -261,9 +265,9 @@ class Publisher:
                         let key = key_value.split("=")[0].trim();
                         let value = key_value.split("=")[1].trim();
                         if (value !== "n/a") {{
-                            if (key === "{self.da.course_code}_db_name") {{
-                                document.getElementById("db_name").value = value;
-                            }} else if (key === "{self.da.course_code}_username") {{
+                            if (key === "{self.da.course_config.course_code}_schema_name") {{
+                                document.getElementById("schema_name").value = value;
+                            }} else if (key === "{self.da.course_config.course_code}_username") {{
                                 document.getElementById("username").value = value;
                             }} else {{
                                 console.log("Unknown cookie: "+key);
@@ -274,13 +278,13 @@ class Publisher:
                 update();
             }}
             function update() {{      
-                let db_name = document.getElementById("db_name").value;
+                let schema_name = document.getElementById("schema_name").value;
                 let username = document.getElementById("username").value;
                 let ids = {ids};
 
-                if (db_name === null || username === null || 
-                    db_name === "" || username === "" || 
-                    db_name == "n/a" || username === "n/a") {{
+                if (schema_name === null || username === null || 
+                    schema_name === "" || username === "" || 
+                    schema_name == "n/a" || username === "n/a") {{
                     for (let i = 0; i < ids.length; i++) {{
                         document.getElementById(ids[i]+"-test-ta").disabled = true;
                         document.getElementById(ids[i]+"-sql-ta").disabled = true;
@@ -294,7 +298,7 @@ class Publisher:
                 }} else {{
                     let illegals = ["<",">","\\"","'","\\\\","/"]; 
                     for (let i= 0; i < illegals.length; i++) {{
-                        if (db_name.includes(illegals[i])) {{
+                        if (schema_name.includes(illegals[i])) {{
                             alert("Please double check your schema (database) name.\\nIt cannot not include the " + illegals[i] + " symbol.");
                             return;
                         }}
@@ -303,7 +307,7 @@ class Publisher:
                             return;
                         }}
                     }}
-                    if (db_name.includes("@")) {{
+                    if (schema_name.includes("@")) {{
                         alert("Please double check your schema (database) name.\\nIt should not include the @ symbol.");
                         return;
                     }}
@@ -319,15 +323,15 @@ class Publisher:
                         document.getElementById(ids[i]+"-sql-btn").disabled = false;
 
                         document.getElementById(ids[i]+"-test-ta").value = document.getElementById(ids[i]+"-test-backup").value
-                                                                                   .replaceAll("{db_name_token}", db_name)
+                                                                                   .replaceAll("{schema_name_token}", schema_name)
                                                                                    .replaceAll("{username_token}", username);
 
                         document.getElementById(ids[i]+"-sql-ta").value = document.getElementById(ids[i]+"-sql-backup").value
-                                                                                  .replaceAll("{db_name_token}", db_name)
+                                                                                  .replaceAll("{schema_name_token}", schema_name)
                                                                                   .replaceAll("{username_token}", username);
 
-                        document.cookie = "{self.da.course_code}_db_name="+db_name;
-                        document.cookie = "{self.da.course_code}_username="+username;
+                        document.cookie = "{self.da.course_config.course_code}_schema_name="+schema_name;
+                        document.cookie = "{self.da.course_config.course_code}_username="+username;
                     }}
                 }}
             }}
@@ -335,7 +339,7 @@ class Publisher:
         
         if not include_inputs:
             html += f"""<script type="text/javascript">
-                    document.getElementById("db_name").value = "n/a";
+                    document.getElementById("schema_name").value = "n/a";
                     document.getElementById("username").value = "n/a";
                     document.getElementById("inputs").style.display = "none";
             </script>"""
@@ -397,7 +401,7 @@ class Step:
         self.statements.append(statement)
     
     def update_statement(self, statement):
-        statement = statement.replace("{db_name}", self.da.db_name)
+        statement = statement.replace("{schema_name}", self.da.schema_name)
         statement = statement.replace("{username}", self.da.username)
 
         self.validate_statement(statement)
@@ -416,16 +420,16 @@ class Step:
             raise Exception(f"Found existing mustache template: {test}")
 
     def render(self, debug=False):
-        if dbgems.get_parameter(GENERATING_DOCS, False):
+        if dbgems.is_generating_docs():
             print(f"Rendering suppressed; publishing")
             return None
         else:
             html = self.to_html(render_alone=True, debug=debug)
             dbgems.display_html(html)
             return html
-    
+        
     def execute(self):
-        if dbgems.get_parameter(GENERATING_DOCS, False):
+        if dbgems.is_generating_docs():
             print(f"Execution suppressed; publishing")
         else:
             for statement in self.statements:

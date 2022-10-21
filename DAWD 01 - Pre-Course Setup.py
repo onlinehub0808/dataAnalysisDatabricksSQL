@@ -23,7 +23,7 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./Includes/Classroom-Setup-01
+# MAGIC %run ./Includes/Classroom-Setup
 
 # COMMAND ----------
 
@@ -79,7 +79,7 @@ DA.install_datasets(reinstall_datasets=False)
 
 # MAGIC %md
 # MAGIC ### Step 3: Create SQL Warehouse
-# MAGIC This task will create one SQL Warehouse for the whole class named **`DBAcademy Warehouse`**
+# MAGIC This task will create one SQL Warehouse for the whole class named **`Starter Warehouse`**
 # MAGIC 
 # MAGIC Upon completion the warehouse will be "**Running**".
 # MAGIC 
@@ -91,7 +91,7 @@ DA.install_datasets(reinstall_datasets=False)
 
 # COMMAND ----------
 
-DA.workspace.warehouses.create_shared_sql_warehouse()
+DA.workspace.warehouses.create_shared_sql_warehouse(name="Starter Warehouse")
 
 # COMMAND ----------
 
@@ -125,15 +125,8 @@ DA.create_user_databases(drop_existing=False)
 # Workspace-Setup which in turn calls this notebook.
 
 current_notebook = dbgems.get_notebook_name()
-if current_notebook == "Workspace-Setup":
-    notebook_name = "Configure-Permissions"
-else:
-    notebook_name = "Includes/Configure-Permissions"
+notebook_name = "Configure-Permissions" if current_notebook == "Workspace-Setup" else "Includes/Configure-Permissions"
 
-print(f"current_notebook: {current_notebook}")
-print(f"notebook_name:    {notebook_name}")
-print()
-    
 job_id = DA.workspace.databases.configure_permissions(notebook_name=notebook_name)
 
 # COMMAND ----------

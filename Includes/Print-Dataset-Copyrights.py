@@ -3,8 +3,18 @@
 
 # COMMAND ----------
 
-DA = DBAcademyHelper(**helper_arguments)
-DA.init(install_datasets=True, create_db=False)
+lesson_config = LessonConfig(name = None,                       # Lesson name feature not needed here.
+                             create_schema = False,             # Only create schema if this is not setup
+                             create_catalog = False,            # Not a UC course
+                             requires_uc = False,               # Not a UC course
+                             installing_datasets = True,        # Only instal the datasets if this is not setup
+                             enable_streaming_support = False)  # This course doesn't use streaming
+
+DA = DBAcademyHelper(course_config=course_config, 
+                     lesson_config=lesson_config)
+DA.reset_lesson()
+DA.init()
+DA.conclude_setup()
 
 # COMMAND ----------
 
