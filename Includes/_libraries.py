@@ -21,5 +21,11 @@ __validate_libraries()
 
 # COMMAND ----------
 
-# MAGIC %pip install --quiet --disable-pip-version-check \
-# MAGIC git+https://github.com/databricks-academy/dbacademy@v1.0.25
+version = spark.conf.get("dbacademy.library.version", "v1.0.26")
+default_command = f"install --quiet --disable-pip-version-check git+https://github.com/databricks-academy/dbacademy@{version}"
+pip_command = spark.conf.get("dbacademy.library.install", default_command)
+if pip_command != default_command: print(f"WARNING: Using alternative library installation:\n| default: %pip {default_command}\n| current: %pip {pip_command}")
+
+# COMMAND ----------
+
+# MAGIC %pip $pip_command

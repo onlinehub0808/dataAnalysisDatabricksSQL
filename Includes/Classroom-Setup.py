@@ -29,6 +29,7 @@ def setup_completed(self):
 workspace_setup = dbgems.get_notebook_name() in ["Workspace-Setup", "DAWD 01 - Pre-Course Setup"]
 not_setup = not workspace_setup  # just for readability
 
+lesson_config.name = dbgems.clean_string(dbgems.get_notebook_name().split(" - ")[0])
 lesson_config.create_schema = not_setup        # Only create schema if this is not setup
 lesson_config.installing_datasets = not_setup  # Only instal the datasets if this is not setup
 
