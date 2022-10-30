@@ -21,10 +21,16 @@ __validate_libraries()
 
 # COMMAND ----------
 
-version = spark.conf.get("dbacademy.library.version", "v1.0.28")
-default_command = f"install --quiet --disable-pip-version-check git+https://github.com/databricks-academy/dbacademy@{version}"
+version = spark.conf.get("dbacademy.library.version", "v1.0.39")
+
+if not version.startswith("v"): library_url = f"git+https://github.com/databricks-academy/dbacademy@{version}"
+else: library_url = f"https://github.com/databricks-academy/dbacademy/releases/download/{version}/dbacademy-{version[1:]}-py3-none-any.whl"
+
+default_command = f"install --quiet --disable-pip-version-check {library_url}"
 pip_command = spark.conf.get("dbacademy.library.install", default_command)
-if pip_command != default_command: print(f"WARNING: Using alternative library installation:\n| default: %pip {default_command}\n| current: %pip {pip_command}")
+
+if pip_command != default_command:
+    print(f"WARNING: Using alternative library installation:\n| default: %pip {default_command}\n| current: %pip {pip_command}")
 
 # COMMAND ----------
 

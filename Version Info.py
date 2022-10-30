@@ -10,8 +10,8 @@
 # MAGIC %md # Project Information
 # MAGIC 
 # MAGIC * Name: **Data Analysis with Databricks**
-# MAGIC * Version:  **1.2.5**
-# MAGIC * Built On: **Oct 21, 2022 at 22:05:40 UTC**
+# MAGIC * Version:  **1.2.6**
+# MAGIC * Built On: **Oct 30, 2022 at 01:42:41 UTC**
 
 # COMMAND ----------
 

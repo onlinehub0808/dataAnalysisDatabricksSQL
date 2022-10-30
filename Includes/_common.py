@@ -29,7 +29,7 @@ lesson_config = LessonConfig(name = None,
                              enable_streaming_support = False)
 
 # Start a timer so we can benchmark execution duration.
-# This is only used by "DAWD 01 - Pre-Course Setup"
+# This is only used by "Workspace-Setup"
 setup_start = int(time.time())
 
 # COMMAND ----------
@@ -53,7 +53,7 @@ def clone_table(self, username, schema_name, table_name, location, verbose=False
                       
     if verbose: print(self.clock_stopped(start))
 
-    return f"  |created table \"{table_name}\"."
+    return f"| created table \"{table_name}\"."
 
 # COMMAND ----------
 
@@ -72,7 +72,7 @@ def populate_database(self, username, schema_name, verbose=False):
     msg += "\n"+self.clone_table(username, schema_name, "gym_logs", "gym_logs/gym_logs_small_delta", verbose=verbose)
     
     if verbose: print()
-    return msg.strip()
+    return msg
 
 # COMMAND ----------
 

@@ -26,10 +26,10 @@ def setup_completed(self):
 
 # The setup notebook will create databases and install datasets for us 
 # so we don't need DBAcademyHelper.init() to do it for us here.
-workspace_setup = dbgems.get_notebook_name() in ["Workspace-Setup", "DAWD 01 - Pre-Course Setup"]
+workspace_setup = dbgems.get_notebook_name() == "Workspace-Setup"
 not_setup = not workspace_setup  # just for readability
 
-lesson_config.name = dbgems.clean_string(dbgems.get_notebook_name().split(" - ")[0])
+lesson_config.name = None if workspace_setup else dbgems.clean_string(dbgems.get_notebook_name().split(" - ")[0])
 lesson_config.create_schema = not_setup        # Only create schema if this is not setup
 lesson_config.installing_datasets = not_setup  # Only instal the datasets if this is not setup
 
