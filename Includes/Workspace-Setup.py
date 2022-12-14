@@ -94,7 +94,8 @@ DA.install_datasets(reinstall_datasets=False)
 
 # COMMAND ----------
 
-DA.workspace.warehouses.create_shared_sql_warehouse(name="Starter Warehouse")
+from dbacademy.dbhelper.warehouses_helper_class import WarehousesHelper
+DA.workspace.warehouses.create_shared_sql_warehouse(name=WarehousesHelper.WAREHOUSES_DEFAULT_NAME)
 
 # COMMAND ----------
 
@@ -117,20 +118,17 @@ DA.create_user_databases(drop_existing=False)
 # MAGIC 
 # MAGIC This requires creating a job using an HA cluster to update user permissions.
 # MAGIC 
-# MAGIC For reference, this job runs the notebook **Includes/Configure-Permissions**
+# MAGIC For reference, this job runs the notebook [Configure-Permissions]($./Configure-Permissions)
 # MAGIC 
 # MAGIC To complete this step, simply run the following command.
 
 # COMMAND ----------
 
-# The logic here changes depending on if we are executing
-# this notebook directly, or if an automation job called 
-# Workspace-Setup which in turn calls this notebook.
+from dbacademy.dbhelper.databases_helper_class import DatabasesHelper
 
-job_id = DA.workspace.databases.configure_permissions("Configure-Permissions")
-
-# COMMAND ----------
-
+# Ensures that all users can create databases on the current catalog 
+# for cases wherein the user/student is not an admin.
+job_id = DatabasesHelper.configure_permissions(DA.client, "Configure-Permissions", "10.4.x-scala2.12")
 DA.client.jobs().delete_by_id(job_id)
 
 # COMMAND ----------

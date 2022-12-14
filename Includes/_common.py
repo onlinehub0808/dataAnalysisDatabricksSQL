@@ -1,5 +1,59 @@
 # Databricks notebook source
-# MAGIC %run ./_libraries
+def __validate_libraries():
+    import requests
+    try:
+        site = "https://github.com/databricks-academy/dbacademy"
+        response = requests.get(site)
+        error = f"Unable to access GitHub or PyPi resources (HTTP {response.status_code} for {site})."
+        assert response.status_code == 200, "{error} Please see the \"Troubleshooting | {section}\" section of the \"Version Info\" notebook for more information.".format(error=error, section="Cannot Install Libraries")
+    except Exception as e:
+        if type(e) is AssertionError: raise e
+        error = f"Unable to access GitHub or PyPi resources ({site})."
+        raise AssertionError("{error} Please see the \"Troubleshooting | {section}\" section of the \"Version Info\" notebook for more information.".format(error=error, section="Cannot Install Libraries")) from e
+
+def __install_libraries():
+    global pip_command
+    
+    specified_version = f"v3.0.5"
+    key = "dbacademy.library.version"
+    version = spark.conf.get(key, specified_version)
+
+    if specified_version != version:
+        print("** Dependency Version Overridden *******************************************************************")
+        print(f"* This course was built for {specified_version} of the DBAcademy Library, but it is being overridden via the Spark")
+        print(f"* configuration variable \"{key}\". The use of version v3.0.5 is not advised as we")
+        print(f"* cannot guarantee compatibility with this version of the course.")
+        print("****************************************************************************************************")
+
+    try:
+        from dbacademy import dbgems  
+        installed_version = dbgems.lookup_current_module_version("dbacademy")
+        if installed_version == version:
+            pip_command = "list --quiet"  # Skipping pip install of pre-installed python library
+        else:
+            print(f"WARNING: The wrong version of dbacademy is attached to this cluster. Expected {version}, found {installed_version}.")
+            print(f"Installing the correct version.")
+            raise Exception("Forcing re-install")
+
+    except Exception as e:
+        # The import fails if library is not attached to cluster
+        if not version.startswith("v"): library_url = f"git+https://github.com/databricks-academy/dbacademy@{version}"
+        else: library_url = f"https://github.com/databricks-academy/dbacademy/releases/download/{version}/dbacademy-{version[1:]}-py3-none-any.whl"
+
+        default_command = f"install --quiet --disable-pip-version-check {library_url}"
+        pip_command = spark.conf.get("dbacademy.library.install", default_command)
+
+        if pip_command != default_command:
+            print(f"WARNING: Using alternative library installation:\n| default: %pip {default_command}\n| current: %pip {pip_command}")
+        else:
+            # We are using the default libraries; next we need to verify that we can reach those libraries.
+            __validate_libraries()
+
+__install_libraries()
+
+# COMMAND ----------
+
+# MAGIC %pip $pip_command
 
 # COMMAND ----------
 
@@ -18,7 +72,7 @@ course_config = CourseConfig(course_code = "dawd",
                              install_min_time = "1 min",
                              install_max_time = "5 min",
                              remote_files = remote_files,
-                             supported_dbrs = ["11.3.x-scala2.12"],
+                             supported_dbrs = ["11.3.x-scala2.12", "11.3.x-photon-scala2.12", "11.3.x-cpu-ml-scala2.12"],
                              expected_dbrs = "11.3.x-scala2.12")
 
 lesson_config = LessonConfig(name = None,
@@ -26,7 +80,8 @@ lesson_config = LessonConfig(name = None,
                              create_catalog = False,
                              requires_uc = False,
                              installing_datasets = True,
-                             enable_streaming_support = False)
+                             enable_streaming_support = False,
+                             enable_ml_support = False)
 
 # Start a timer so we can benchmark execution duration.
 # This is only used by "Workspace-Setup"
@@ -36,7 +91,7 @@ setup_start = int(time.time())
 
 @DBAcademyHelper.monkey_patch
 def clone_table(self, username, schema_name, table_name, location, verbose=False):
-    start = self.clock_start()
+    start = dbgems.clock_start()
     existing_tables = [r["tableName"] for r in spark.sql(f"SHOW TABLES IN {schema_name}").collect()]
     
     if table_name in existing_tables: 
@@ -51,7 +106,7 @@ def clone_table(self, username, schema_name, table_name, location, verbose=False
     table_location = f"{self.paths.datasets}/{location}"
     dbgems.sql(f"CREATE TABLE IF NOT EXISTS {name} SHALLOW CLONE delta.`{table_location}`;")
                       
-    if verbose: print(self.clock_stopped(start))
+    if verbose: print(dbgems.clock_stopped(start))
 
     return f"| created table \"{table_name}\"."
 
@@ -283,8 +338,7 @@ class Publisher:
                 let ids = {ids};
 
                 if (schema_name === null || username === null || 
-                    schema_name === "" || username === "" || 
-                    schema_name == "n/a" || username === "n/a") {{
+                    schema_name === "" || username === "") {{
                     for (let i = 0; i < ids.length; i++) {{
                         document.getElementById(ids[i]+"-test-ta").disabled = true;
                         document.getElementById(ids[i]+"-sql-ta").disabled = true;
@@ -294,6 +348,14 @@ class Publisher:
 
                         document.getElementById(ids[i]+"-test-ta").value = document.getElementById(ids[i]+"-test-backup").value
                         document.getElementById(ids[i]+"-sql-ta").value = document.getElementById(ids[i]+"-sql-backup").value
+                    }}
+                }} else if (schema_name == "n/a" || username === "n/a") {{
+                    for (let i = 0; i < ids.length; i++) {{
+                        document.getElementById(ids[i]+"-test-ta").disabled = false;
+                        document.getElementById(ids[i]+"-sql-ta").disabled = false;
+
+                        document.getElementById(ids[i]+"-test-btn").disabled = false;
+                        document.getElementById(ids[i]+"-sql-btn").disabled = false;
                     }}
                 }} else {{
                     let illegals = ["<",">","\\"","'","\\\\","/"]; 

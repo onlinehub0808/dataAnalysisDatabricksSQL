@@ -5,8 +5,17 @@
 
 @DBAcademyHelper.monkey_patch
 def create_user_databases(self, drop_existing=False):
-    self.workspace.databases.create_databases(drop_existing=drop_existing, 
+    configure_for = WorkspaceHelper.CONFIGURE_FOR_CURRENT_USER_ONLY if DBAcademyHelper.is_smoke_test() else dbgems.get_parameter(WorkspaceHelper.PARAM_CONFIGURE_FOR)
+    self.workspace.databases.create_databases(configure_for=configure_for,
+                                              drop_existing=drop_existing, 
                                               post_create=self.populate_database)
+
+# COMMAND ----------
+
+@DBAcademyHelper.monkey_patch
+def drop_user_databases(self, drop_existing=False):
+    configure_for = WorkspaceHelper.CONFIGURE_FOR_CURRENT_USER_ONLY if DBAcademyHelper.is_smoke_test() else dbgems.get_parameter(WorkspaceHelper.PARAM_CONFIGURE_FOR)
+    self.workspace.databases.drop_databases(configure_for=configure_for)
 
 # COMMAND ----------
 
