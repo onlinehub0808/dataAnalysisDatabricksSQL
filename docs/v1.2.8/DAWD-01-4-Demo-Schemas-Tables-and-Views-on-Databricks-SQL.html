@@ -80,19 +80,8 @@
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-1-sql" style="width:800px; display: none;">
             <div>
                 <textarea id="step-1-sql-ta" style="width:100%; padding:10px" rows="2"></textarea>
@@ -136,19 +125,8 @@ Create Schema</h2>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-2-sql" style="width:800px; ">
             <div>
                 <textarea id="step-2-sql-ta" style="width:100%; padding:10px" rows="4">DROP SCHEMA IF EXISTS {schema_name}_schema CASCADE;
@@ -197,19 +175,8 @@ Managed Tables</h2>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-3-sql" style="width:800px; ">
             <div>
                 <textarea id="step-3-sql-ta" style="width:100%; padding:10px" rows="5">USE {schema_name};
@@ -255,19 +222,8 @@ SELECT * FROM managed_table;</textarea>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-4-sql" style="width:800px; ">
             <div>
                 <textarea id="step-4-sql-ta" style="width:100%; padding:10px" rows="3">USE {schema_name};
@@ -308,19 +264,8 @@ DESCRIBE EXTENDED managed_table;</textarea>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-5-sql" style="width:800px; ">
             <div>
                 <textarea id="step-5-sql-ta" style="width:100%; padding:10px" rows="3">USE {schema_name};
@@ -364,19 +309,8 @@ External Tables</h2>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-6-sql" style="width:800px; ">
             <div>
                 <textarea id="step-6-sql-ta" style="width:100%; padding:10px" rows="5">USE {schema_name};
@@ -423,19 +357,8 @@ SELECT * FROM external_table;</textarea>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-7-sql" style="width:800px; ">
             <div>
                 <textarea id="step-7-sql-ta" style="width:100%; padding:10px" rows="3">USE {schema_name};
@@ -478,19 +401,8 @@ DESCRIBE EXTENDED external_table;</textarea>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-8-sql" style="width:800px; ">
             <div>
                 <textarea id="step-8-sql-ta" style="width:100%; padding:10px" rows="3">USE {schema_name};
@@ -533,19 +445,8 @@ DROP TABLE IF EXISTS external_table;</textarea>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-9-sql" style="width:800px; ">
             <div>
                 <textarea id="step-9-sql-ta" style="width:100%; padding:10px" rows="2">SELECT * FROM delta.`wasbs://courseware@dbacademy.blob.core.windows.net/data-analysis-with-databricks/v02/retail-org/sales/sales_delta`;</textarea>
@@ -587,19 +488,8 @@ Views</h2>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-10-sql" style="width:800px; ">
             <div>
                 <textarea id="step-10-sql-ta" style="width:100%; padding:10px" rows="6">USE {schema_name};
@@ -649,19 +539,8 @@ Common Table Expressions (CTEs)</h2>
                     ta.setSelectionRange(0, ta.value.length);
                     navigator.clipboard.writeText(ta.value);">Copy</button>
             </div>
-
-            <table style="margin:1em 0; border-collapse:collapse; width:800px;">
-                <tbody>
-                    <tr>
-                        <td style="background-color: #D1E2FF; width: 100%; text-align:left;">None</td>
-                        <td style="background-color: #D1E2FF; width: 1em; text-align:right;">
-                            <input type="text" size="-1" onchange="answerIs(this, ['None']);" style="background-color: rgb(255, 255, 255);">
-                        </td>
-                    </tr>    
-                </tbody>
-            </table>
-        </div>
-        
+        </div>  
+          
         <div id="step-11-sql" style="width:800px; ">
             <div>
                 <textarea id="step-11-sql-ta" style="width:100%; padding:10px" rows="7">USE {schema_name};
