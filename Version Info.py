@@ -10,8 +10,8 @@
 # MAGIC %md # Project Information
 # MAGIC 
 # MAGIC * Name: **Data Analysis with Databricks**
-# MAGIC * Version:  **1.2.9**
-# MAGIC * Built On: **Dec 22, 2022 at 18:07:41 UTC**
+# MAGIC * Version:  **1.2.10**
+# MAGIC * Built On: **Jan 11, 2023 at 18:07:32 UTC**
 
 # COMMAND ----------
 
@@ -42,7 +42,7 @@
 # MAGIC 
 # MAGIC To ensure that all labs execute as expected, Databricks Academy requires that the content provided be executed against a cluster configured with a specific runtime. Typically this is an LTS (long-term supported) version.
 # MAGIC 
-# MAGIC This course is tested against and requires one of the following DBRs (Databricks Runtime): **11.3.x-scala2.12**.
+# MAGIC This course is tested against and requires one of the following DBRs (Databricks Runtime): **11.3.x-scala2.12, 11.3.x-photon-scala2.12, 11.3.x-cpu-ml-scala2.12**.
 # MAGIC 
 # MAGIC For more current information, please <a href="https://files.training.databricks.com/static/troubleshooting.html#spark-version" target="_blank">Troubleshooting the Spark Version</a>
 
@@ -108,7 +108,7 @@
 # COMMAND ----------
 
 # MAGIC %md-sandbox
-# MAGIC &copy; 2022 Databricks, Inc. All rights reserved.<br/>
+# MAGIC &copy; 2023 Databricks, Inc. All rights reserved.<br/>
 # MAGIC Apache, Apache Spark, Spark and the Spark logo are trademarks of the <a href="https://www.apache.org/">Apache Software Foundation</a>.<br/>
 # MAGIC <br/>
 # MAGIC <a href="https://databricks.com/privacy-policy">Privacy Policy</a> | <a href="https://databricks.com/terms-of-use">Terms of Use</a> | <a href="https://help.databricks.com/">Support</a>

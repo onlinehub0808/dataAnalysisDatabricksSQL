@@ -73,7 +73,7 @@ course_config = CourseConfig(course_code = "dawd",
                              install_max_time = "5 min",
                              remote_files = remote_files,
                              supported_dbrs = ["11.3.x-scala2.12", "11.3.x-photon-scala2.12", "11.3.x-cpu-ml-scala2.12"],
-                             expected_dbrs = "11.3.x-scala2.12")
+                             expected_dbrs = "11.3.x-scala2.12, 11.3.x-photon-scala2.12, 11.3.x-cpu-ml-scala2.12")
 
 lesson_config = LessonConfig(name = None,
                              create_schema = True,

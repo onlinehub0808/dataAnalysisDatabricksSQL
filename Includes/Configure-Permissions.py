@@ -12,7 +12,7 @@ course_config = CourseConfig(course_code = course_config.course_code,
                              install_max_time = course_config.install_max_time,
                              remote_files = course_config.remote_files,
                              supported_dbrs = ["10.4.x-scala2.12"],
-                             expected_dbrs = "11.3.x-scala2.12")
+                             expected_dbrs = "10.4.x-scala2.12")
 
 lesson_config.create_schema = False
 lesson_config.installing_datasets = False
